@@ -1043,12 +1043,6 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 			flags |= SDL_DOUBLEBUF;
 	}
 	
-	/* FIXME */
-	if( ( bpp == 8 ) && ( (flags&SDL_FULLSCREEN)==0 ) )
-	{
-		flags |= SDL_FULLSCREEN;
-	}
-
 	/*
 	 * Set up hardware record for this display surface
 	 */
