@@ -1,23 +1,15 @@
-LibSDL-1.2.13 for OS4.0
+LibSDL-1.2.13 for OS4.x
 =======================
 
-This is Xerons Unofficial Build of SDL for OS4. It is hoped that EvilRich
-will resume development of SDL and make this branch obsolete.
-
-Questions/comments? -> pete@petergordon.org.uk
-
-
-Original README follows...
-
-
 This is a port of the multimedia library SDL (Simple Directmedia Layer) for
-AmigaOS 4.0. For more information on SDL, see the included material and the
+AmigaOS 4.x. For more information on SDL, see the included material and the
 SDL web site: http://www.libsdl.org/.
 
-This implementation is a fresh port of SDL for AmigaOS 4.0. It does not share
-code with the existing 68k AmigaOS or MorphOS versions of SDL.
+This implementation is a fresh port of SDL for AmigaOS 4.x. It does not share
+code with the existing 68k AmigaOS or MorphOS versions of SDL (although the
+CD-ROM support used the MorphOS SDL as a reference).
 
-SDL for AmigaOS 4.0 is still a work in progress. What functionality exists
+SDL for AmigaOS 4.x is still a work in progress. What functionality exists
 has proven to be stable, but some features of SDL are not yet supported. Note
 also that it is currently only provided as a static linker library (albeit in
 two flavours, depending on which C library you choose to employ: clib2 or
@@ -62,9 +54,7 @@ Supported features
 
 * Full threading support.
 
-* An experimental ELF shared object. (This requires AmigaOS4.0 v52 or
-  better, and, as far as I know, the tools to make use of this in your
-  own software have not been made widely available yet.)
+* An ELF shared object.
 
 
 Not yet supported
@@ -74,8 +64,6 @@ Not yet supported
 
 * Gamma functions (this cannot yet be supported due to P96 limitations).
 
-* CD-ROM support.
-
 
 Contributors
 ============
@@ -84,20 +72,18 @@ SDL itself is the work of Sam Lantinga and many others. See the main SDL
 documentation for a full list. This AmigaOS 4.0 port has been created by
 (in alphabetical order):
 
-Peter Gordon <pete@petergordon.org.uk>
 Richard Drummond <evilrich@rcrummond.net>
 Hans-Joerg Frieden <Hans-JoergF@hyperion-entertainment.biz>
 Thomas Frieden <ThomasF@hyperion-entertainment.biz>
+Peter Gordon <pete@petergordon.org.uk>
 Juergen Schober
 
 
 Contacts
 ========
 
-We hope to soon make this version of SDL available in a public CVS
-repository (and eventually have it merged into the mainline SDL). Until that
-time send comments, bug reports and patches to one of the contributors listed
-above. Don't bother the maintainers of the mainline SDL source.
+Please place bug reports and comments in the tracker at the OS4 SDL
+homepage:
 
-In the meantime, you can find AmigaOS4 versions of SDL on the web at
-http://www.rcdrummond.net/sdl.
+http://code.google.com/p/os4sdl
+

@@ -97,7 +97,7 @@ static int OS4_OpenAhiDevice(OS4AudioData *os4data)
                         TAG_DONE );
                 if (os4data->ahi_IORequest[1])
                 {
-                    IExec->CopyMem(os4data->ahi_IORequest[0], os4data->ahi_IORequest[1], sizeof(struct AHIRequest));
+//                    IExec->CopyMem(os4data->ahi_IORequest[0], os4data->ahi_IORequest[1], sizeof(struct AHIRequest));
 
                     /* create our os4 interface */
                     os4data->ahi_IFace = (struct AHIIFace*)
