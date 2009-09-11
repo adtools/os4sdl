@@ -31,7 +31,7 @@
 #include <proto/exec.h>
 #include <proto/amigainput.h>
 
-#define DEBUG
+//#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
 /*
@@ -63,6 +63,7 @@ struct joystick_hwdata
 
 	uint32				axisBufferOffset[MAX_AXES];
 	int32				axisData[MAX_AXES];
+	TEXT                axisName[MAX_AXES][32];
 
 	uint32				buttonBufferOffset[MAX_BUTTONS];
 	int32				buttonData[MAX_BUTTONS];
@@ -330,6 +331,8 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 			unsigned int			num_axes    = 0;
 			unsigned int			num_buttons = 0;
 			unsigned int			num_hats    = 0;
+			TEXT tmpstr[32];
+			uint32 tmpoffset;
 
 			int i;
 			BOOL result = TRUE;
@@ -344,18 +347,63 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 			result &= IAIN->AIN_Query(hwdata->context, id, AINQ_NUMBUTTONS, 0, &num_buttons, 4);
 			result &= IAIN->AIN_Query(hwdata->context, id, AINQ_NUMHATS,    0, &num_hats, 4);
 
-			dprintf ("Found %d axes, %d buttons, %d hats\n", num_axes, num_buttons, num_hats);
+//			dprintf ("Found %d axes, %d buttons, %d hats\n", num_axes, num_buttons, num_hats);
 
 			joystick->naxes    = num_axes < MAX_AXES       ? num_axes    : MAX_AXES;
 			joystick->nbuttons = num_buttons < MAX_BUTTONS ? num_buttons : MAX_BUTTONS;
 			joystick->nhats    = num_hats < MAX_HATS       ? num_hats    : MAX_HATS;
+			
+			// Ensure all axis names are null terminated
+			for (i = 0; i < MAX_AXES; i++)
+			  hwdata->axisName[i][0] = 0;
 
 			/* Query offsets in ReadDevice buffer for axes' data */
 			for (i = 0; i < joystick->naxes; i++)
 			{
 				result = result && IAIN->AIN_Query(hwdata->context, id, AINQ_AXIS_OFFSET, i, &(hwdata->axisBufferOffset[i]), 4);
+				result = result && IAIN->AIN_Query(hwdata->context, id, AINQ_AXISNAME,    i, &(hwdata->axisName[i][0]), 32 );
 			}
+			
+			// Sort the axes so that X and Y come first
+			for (i = 0; i < joystick->naxes; i++)
+			{
+			  if( ( strcasecmp( &hwdata->axisName[i][0], "X-Axis" ) == 0 ) &&
+			      ( i != 0 ) )
+			  {
+			    // Back up the zero position axis data
+			    tmpoffset = hwdata->axisBufferOffset[0];
+			    strlcpy( tmpstr, hwdata->axisName[0], 32 );
+			    
+			    // Move this one to zero
+			    hwdata->axisBufferOffset[0] = hwdata->axisBufferOffset[i];
+			    strlcpy( hwdata->axisName[0], hwdata->axisName[i], 32 );
+			    
+			    // Put the old 0 here
+			    hwdata->axisBufferOffset[i] = tmpoffset;
+			    strlcpy( hwdata->axisName[i], tmpstr, 32 );
+			    
+			    continue;
+			  }
 
+			  if( ( strcasecmp( &hwdata->axisName[i][0], "Y-Axis" ) == 0 ) &&
+			      ( i != 1 ) )
+			  {
+			    // Back up the position 1 axis data
+			    tmpoffset = hwdata->axisBufferOffset[1];
+			    strlcpy( tmpstr, hwdata->axisName[1], 32 );
+			    
+			    // Move this one to position 1
+			    hwdata->axisBufferOffset[1] = hwdata->axisBufferOffset[i];
+			    strlcpy( hwdata->axisName[1], hwdata->axisName[i], 32 );
+			    
+			    // Put the old 1 here
+			    hwdata->axisBufferOffset[i] = tmpoffset;
+			    strlcpy( hwdata->axisName[i], tmpstr, 32 );
+			    
+			    continue;
+			  }
+			}
+			
 			/* Query offsets in ReadDevice buffer for buttons' data */
 			for (i = 0; i < joystick->nbuttons; i++)
 			{
