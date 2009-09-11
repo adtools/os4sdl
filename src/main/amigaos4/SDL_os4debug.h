@@ -30,8 +30,8 @@
 #include <proto/exec.h>
 
 #ifndef DEBUG
-# define dprintf(format, args...) ((void)0)
-# define kprintf(format, args...) ((void)0)
+# define dprintf(format, args...)
+# define kprintf(format, args...)
 #else /* DEBUG */
 # define dprintf(format, args...) IExec->DebugPrintF("[%s] " format, __PRETTY_FUNCTION__ , ## args)
 //# define dprintf(format, args...)((struct ExecIFace *)((*(struct ExecBase **)4)->MainInterface))->DebugPrintF("[%s] " format, __PRETTY_FUNCTION__ , ## args)

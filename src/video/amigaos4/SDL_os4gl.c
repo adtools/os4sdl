@@ -40,7 +40,7 @@
 #include <GL/gl.h>
 #include <mgl/gl.h>
 
-#define DEBUG
+//#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
 
