@@ -52,6 +52,10 @@ extern void SDL_TimerQuit(void);
 static SDL_version version = 
 	{ SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL };
 
+#ifdef __amigaos4__
+static char __attribute((used)) amiga_ver[] = "$VER: SDL1_2_13 1.0 (15.9.2009)\0";
+#endif
+
 /* The initialized subsystems */
 static Uint32 SDL_initialized = 0;
 #if !SDL_TIMERS_DISABLED
