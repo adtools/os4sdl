@@ -41,6 +41,11 @@
 //#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
+extern struct GraphicsIFace  *SDL_IGraphics;
+extern struct IntuitionIFace *SDL_IIntuition;
+extern struct WorkbenchIFace *SDL_IWorkbench;
+extern struct IconIFace      *SDL_IIcon;
+
 struct WMcursor
 {
 	uint16 *Image;
@@ -105,7 +110,7 @@ void os4video_SetCaption(_THIS, const char *title, const char *icon)
 		dprintf("Setting title to %s\n", title);
 		SDL_strlcpy(hidden->currentCaption, title, 127);
 		if (hidden->win)
-			IIntuition->SetWindowTitles(hidden->win, hidden->currentCaption, hidden->currentCaption);
+			SDL_IIntuition->SetWindowTitles(hidden->win, hidden->currentCaption, hidden->currentCaption);
 	}
         if (icon) {
 		dprintf("Setting icon caption to %s\n", title);
@@ -203,7 +208,7 @@ void os4video_ResetCursor(struct SDL_PrivateVideoData *hidden)
 
 	if (cursor)
 	{
-		IIntuition->SetPointer(hidden->win, cursor->Image, cursor->Width, cursor->Height,
+		SDL_IIntuition->SetPointer(hidden->win, cursor->Image, cursor->Width, cursor->Height,
 							   cursor->XOffset, cursor->YOffset);
 
 		dprintf("Cursor image set\n");
@@ -212,7 +217,7 @@ void os4video_ResetCursor(struct SDL_PrivateVideoData *hidden)
 	{
 		if (hidden->mouse)
 		{
-			IIntuition->SetPointer(hidden->win, hidden->mouse, 0, 0, 0, 0);
+			SDL_IIntuition->SetPointer(hidden->win, hidden->mouse, 0, 0, 0, 0);
 
 			dprintf("Cursor image blanked\n");
 		}
@@ -334,7 +339,7 @@ void SetMouseColors(_THIS)
 	if (!hidden->mouseColorsValid)
 	{
 		/* Store old colors */
-		IGraphics->GetRGB32(vp->ColorMap, 16, 4, &hidden->mouseColors[1]);
+		SDL_IGraphics->GetRGB32(vp->ColorMap, 16, 4, &hidden->mouseColors[1]);
 		hidden->mouseColorsValid = 1;
 	}
 
@@ -363,7 +368,7 @@ void SetMouseColors(_THIS)
 
 	colors[13] = 0;
 
-	IGraphics->LoadRGB32(vp, colors);
+	SDL_IGraphics->LoadRGB32(vp, colors);
 }
 
 void ResetMouseColors(_THIS)
@@ -384,7 +389,7 @@ void ResetMouseColors(_THIS)
 	hidden->mouseColors[13] = 0;
 
 	/* Just load old colors */
-	IGraphics->LoadRGB32(vp, hidden->mouseColors);
+	SDL_IGraphics->LoadRGB32(vp, hidden->mouseColors);
 	hidden->mouseColorsValid = 0;
 }
 
@@ -426,10 +431,10 @@ BOOL CreateAppIcon(_THIS)
 
 	if (!hidden->currentIcon)
 	{
-		hidden->currentIcon = IIcon->GetDefDiskObject(WBTOOL);
+		hidden->currentIcon = SDL_IIcon->GetDefDiskObject(WBTOOL);
 	}
 
-	hidden->currentAppIcon = IWorkbench->AddAppIcon(0, (uint32)_this, hidden->currentIconCaption,
+	hidden->currentAppIcon = SDL_IWorkbench->AddAppIcon(0, (uint32)_this, hidden->currentIconCaption,
 								hidden->appPort, 0, hidden->currentIcon,
 								TAG_DONE);
 
@@ -444,7 +449,7 @@ void DeleteAppIcon(_THIS)
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
 
 	if (hidden->currentAppIcon)
-		IWorkbench->RemoveAppIcon(hidden->currentAppIcon);
+		SDL_IWorkbench->RemoveAppIcon(hidden->currentAppIcon);
 
 	hidden->currentAppIcon = 0;
 }
@@ -463,12 +468,12 @@ int os4video_IconifyWindow(_THIS)
 	if (SDL_VideoSurface->flags & SDL_FULLSCREEN)
 	{
 		/* Just bring the Workbench to front */
-		IIntuition->WBenchToFront();
+		SDL_IIntuition->WBenchToFront();
 	}
 	else
 	{
 		/* Hide the window */
-		IIntuition->HideWindow(hidden->win);
+		SDL_IIntuition->HideWindow(hidden->win);
 		hidden->pointerState = pointer_outside_window;
 		SDL_PrivateAppActive(0, SDL_APPACTIVE | SDL_APPINPUTFOCUS);
 	}
@@ -486,13 +491,13 @@ void os4video_UniconifyWindow(_THIS)
 	if (SDL_VideoSurface->flags & SDL_FULLSCREEN)
 	{
 		/* Just bring the Workbench to front */
-		IIntuition->ScreenToFront(hidden->scr);
+		SDL_IIntuition->ScreenToFront(hidden->scr);
 	}
 	else
 	{
 		/* Show the window */
 		SDL_PrivateAppActive(1, SDL_APPACTIVE);
-		IIntuition->ShowWindow(hidden->win, WINDOW_FRONTMOST);
+		SDL_IIntuition->ShowWindow(hidden->win, WINDOW_FRONTMOST);
 	}
 }
 
@@ -506,7 +511,7 @@ void os4video_SetIcon(_THIS, SDL_Surface *icon, Uint8 *mask)
 		/* If no app icon exists, we can just delete the old icon */
 		if (hidden->currentAppIcon)
 		{
-			IIcon->FreeDiskObject(hidden->currentIcon);
+			SDL_IIcon->FreeDiskObject(hidden->currentIcon);
 			hidden->currentIcon = 0;
 		}
 		else
@@ -516,14 +521,14 @@ void os4video_SetIcon(_THIS, SDL_Surface *icon, Uint8 *mask)
 				IExec->ReplyMsg((struct Message *)amsg);
 
 			DeleteAppIcon(_this);
-			IIcon->FreeDiskObject(hidden->currentIcon);
+			SDL_IIcon->FreeDiskObject(hidden->currentIcon);
 			CreateAppIcon(_this);
 		}
 	}
 
 
-	hidden->currentIcon = IIcon->GetDefDiskObject(WBTOOL);
-	//hidden->currentIcon = IIcon->NewDiskObject(WBTOOL);
+	hidden->currentIcon = SDL_IIcon->GetDefDiskObject(WBTOOL);
+	//hidden->currentIcon = SDL_IIcon->NewDiskObject(WBTOOL);
 	hidden->currentIcon->do_Type = 0;
 
 }

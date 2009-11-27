@@ -41,6 +41,9 @@
 //#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
+extern struct LayersIFace    *SDL_ILayers;
+extern struct IntuitionIFace *SDL_IIntuition;
+extern struct KeymapIFace    *SDL_IKeymap;
 
 #define POINTER_GRAB_TIMEOUT		20	/* Number of ticks before pointer grab needs to be reactivated */
 
@@ -200,7 +203,7 @@ os4video_TranslateUnicode(uint16 Code, uint32 Qualifier)
     ie.ie_Qualifier = Qualifier;
     ie.ie_EventAddress = NULL;
 
-	res = IKeymap->MapRawKey(&ie, buffer, 10, 0);
+	res = SDL_IKeymap->MapRawKey(&ie, buffer, 10, 0);
 	if (res != 1) return 0;
 	else return buffer[0];
 }
@@ -352,9 +355,9 @@ os4video_CheckPointerInWindow (struct Window *win, struct MyIntuiMessage *imsg)
 		struct Layer *layer;
 
 		/* Find which layer the pointer is in */
-		ILayers->LockLayerInfo(&scr->LayerInfo);
-		layer = ILayers->WhichLayer(&scr->LayerInfo, scr->MouseX, scr->MouseY);
-		ILayers->UnlockLayerInfo(&scr->LayerInfo);
+		SDL_ILayers->LockLayerInfo(&scr->LayerInfo);
+		layer = SDL_ILayers->WhichLayer(&scr->LayerInfo, scr->MouseX, scr->MouseY);
+		SDL_ILayers->UnlockLayerInfo(&scr->LayerInfo);
 
 		/* Is this layer our window's layer? */
 		if (layer == win->WLayer)
@@ -418,7 +421,7 @@ os4video_HandleEnterLeaveWindow (SDL_VideoDevice *_this, struct MyIntuiMessage *
 			/* Install WB default pointer image */
 			ResetMouseColors(_this);
 			if (hidden->mouse)
-				IIntuition->SetWindowPointer(hidden->win, WA_Pointer, NULL, TAG_DONE);
+				SDL_IIntuition->SetWindowPointer(hidden->win, WA_Pointer, NULL, TAG_DONE);
 
 			/* Tell SDL we have lost mouse focus */
 			SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
@@ -437,8 +440,8 @@ os4video_activatePointerGrab(struct Window *w, BOOL activate)
 		w->Height - w->BorderTop  - w->BorderBottom
 	};
 
-	IIntuition->SetWindowAttrs(w, WA_MouseLimits, &grabBox, sizeof grabBox);
-	IIntuition->SetWindowAttrs(w, WA_GrabFocus, activate ? POINTER_GRAB_TIMEOUT : 0, sizeof (ULONG));
+	SDL_IIntuition->SetWindowAttrs(w, WA_MouseLimits, &grabBox, sizeof grabBox);
+	SDL_IIntuition->SetWindowAttrs(w, WA_GrabFocus, activate ? POINTER_GRAB_TIMEOUT : 0, sizeof (ULONG));
 }
 
 static void

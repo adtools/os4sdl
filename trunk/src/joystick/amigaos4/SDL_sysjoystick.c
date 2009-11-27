@@ -31,7 +31,7 @@
 #include <proto/exec.h>
 #include <proto/amigainput.h>
 
-//#define DEBUG
+#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
 /*
@@ -46,8 +46,8 @@
 extern SDL_Joystick **SDL_joysticks;
 
 
-struct Library   *AIN_Base;
-struct AIN_IFace *IAIN;
+struct Library   *SDL_AIN_Base;
+struct AIN_IFace *SDL_IAIN;
 
 struct joystick
 {
@@ -140,16 +140,16 @@ static inline Uint8 map_hat_data(int hat_data)
 
 static BOOL openAmigaInput (void)
 {
-	AIN_Base = IExec->OpenLibrary("AmigaInput.library", 51);
+	SDL_AIN_Base = IExec->OpenLibrary("AmigaInput.library", 51);
 
-	if (AIN_Base)
+	if (SDL_AIN_Base)
 	{
-		IAIN = (struct AIN_IFace *) IExec->GetInterface(AIN_Base, "main", 1, NULL);
+		SDL_IAIN = (struct AIN_IFace *) IExec->GetInterface(SDL_AIN_Base, "main", 1, NULL);
 
-		if (!IAIN)
+		if (!SDL_IAIN)
 		{
-			IExec->CloseLibrary(AIN_Base);
-			AIN_Base = NULL;
+			IExec->CloseLibrary(SDL_AIN_Base);
+			SDL_AIN_Base = NULL;
 		}
 	}
 	else
@@ -157,21 +157,21 @@ static BOOL openAmigaInput (void)
 		dprintf("Failed to open AmigaInput.library\n");
 	}
 
-	return AIN_Base != NULL;
+	return SDL_AIN_Base != NULL;
 }
 
 static void closeAmigaInput(void)
 {
-	if (IAIN)
+	if (SDL_IAIN)
 	{
-		IExec->DropInterface((struct Interface *)IAIN);
-		IAIN = NULL;
+		IExec->DropInterface((struct Interface *)SDL_IAIN);
+		SDL_IAIN = NULL;
 	}
 
-	if (AIN_Base)
+	if (SDL_AIN_Base)
 	{
-		IExec->CloseLibrary(AIN_Base);
-		AIN_Base = NULL;
+		IExec->CloseLibrary(SDL_AIN_Base);
+		SDL_AIN_Base = NULL;
 	}
 }
 
@@ -205,7 +205,7 @@ static BOOL enumerateJoysticks (AIN_Device *device, void *UserData)
 			{
 				/* Then, check whether we can actually obtain the device
 				 */
-				AIN_DeviceHandle *handle = IAIN->AIN_ObtainDevice (context, device->DeviceID);
+				AIN_DeviceHandle *handle = SDL_IAIN->AIN_ObtainDevice (context, device->DeviceID);
 
 				if (handle)
 				{
@@ -218,7 +218,7 @@ static BOOL enumerateJoysticks (AIN_Device *device, void *UserData)
 
 					(*count)++;
 
-					IAIN->AIN_ReleaseDevice (context, handle);
+					SDL_IAIN->AIN_ReleaseDevice (context, handle);
 
 					result = TRUE;
 				}
@@ -241,7 +241,7 @@ int SDL_SYS_JoystickInit(void)
 {
 	if (openAmigaInput())
 	{
-		joystickContext = IAIN->AIN_CreateContext(1, NULL);
+		joystickContext = SDL_IAIN->AIN_CreateContext(1, NULL);
 
 		if (joystickContext)
 		{
@@ -251,7 +251,7 @@ int SDL_SYS_JoystickInit(void)
 				&joystickList[0]
 			};
 
-			dprintf( "ENUM RETURNED: %ld\n", (int32)IAIN->AIN_EnumDevices(joystickContext, enumerateJoysticks, &packet) );
+			dprintf( "ENUM RETURNED: %ld\n", (int32)SDL_IAIN->AIN_EnumDevices(joystickContext, enumerateJoysticks, &packet) );
 
 			dprintf("Found %d joysticks\n", joystickCount);
 		}
@@ -298,7 +298,7 @@ void SDL_SYS_JoystickQuit(void)
 	joystickCount = 0;
 
 	if (joystickContext) {
-		IAIN->AIN_DeleteContext(joystickContext);
+		SDL_IAIN->AIN_DeleteContext(joystickContext);
 		joystickContext = 0;
 	}
 
@@ -317,7 +317,7 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 	AIN_DeviceHandle *handle;
 
 	id     = joystickList[joystick->index].id;
-	handle = IAIN->AIN_ObtainDevice(joystickContext, id);
+	handle = SDL_IAIN->AIN_ObtainDevice(joystickContext, id);
 
 	dprintf("Opening joystick #%d (AI ID=%d)\n", joystick->index, id);
 
@@ -343,9 +343,9 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 			joystick->name  = joystickList[joystick->index].name;
 
 			/* Query number of axes, buttons and hats the device has */
-			result &= IAIN->AIN_Query(hwdata->context, id, AINQ_NUMAXES,    0, &num_axes, 4);
-			result &= IAIN->AIN_Query(hwdata->context, id, AINQ_NUMBUTTONS, 0, &num_buttons, 4);
-			result &= IAIN->AIN_Query(hwdata->context, id, AINQ_NUMHATS,    0, &num_hats, 4);
+			result &= SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_NUMAXES,    0, &num_axes, 4);
+			result &= SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_NUMBUTTONS, 0, &num_buttons, 4);
+			result &= SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_NUMHATS,    0, &num_hats, 4);
 
 //			dprintf ("Found %d axes, %d buttons, %d hats\n", num_axes, num_buttons, num_hats);
 
@@ -360,8 +360,8 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 			/* Query offsets in ReadDevice buffer for axes' data */
 			for (i = 0; i < joystick->naxes; i++)
 			{
-				result = result && IAIN->AIN_Query(hwdata->context, id, AINQ_AXIS_OFFSET, i, &(hwdata->axisBufferOffset[i]), 4);
-				result = result && IAIN->AIN_Query(hwdata->context, id, AINQ_AXISNAME,    i, &(hwdata->axisName[i][0]), 32 );
+				result = result && SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_AXIS_OFFSET, i, &(hwdata->axisBufferOffset[i]), 4);
+				result = result && SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_AXISNAME,    i, &(hwdata->axisName[i][0]), 32 );
 			}
 			
 			// Sort the axes so that X and Y come first
@@ -407,13 +407,13 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 			/* Query offsets in ReadDevice buffer for buttons' data */
 			for (i = 0; i < joystick->nbuttons; i++)
 			{
-				result = result && IAIN->AIN_Query(hwdata->context, id, AINQ_BUTTON_OFFSET, i, &(hwdata->buttonBufferOffset[i]), 4);
+				result = result && SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_BUTTON_OFFSET, i, &(hwdata->buttonBufferOffset[i]), 4);
 			}
 
 			/* Query offsets in ReadDevice buffer for hats' data */
 			for (i = 0; i < joystick->nhats; i++)
 			{
-				result = result && IAIN->AIN_Query(hwdata->context, id, AINQ_HAT_OFFSET, i, &(hwdata->hatBufferOffset[i]), 4);
+				result = result && SDL_IAIN->AIN_Query(hwdata->context, id, AINQ_HAT_OFFSET, i, &(hwdata->hatBufferOffset[i]), 4);
 			}
 
 			if (result)
@@ -423,7 +423,7 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 				return 0;
 			}
 		}
-		IAIN->AIN_ReleaseDevice (joystickContext, handle);
+		SDL_IAIN->AIN_ReleaseDevice (joystickContext, handle);
 	}
 
 	SDL_SetError("Failed to open device\n");
@@ -437,7 +437,7 @@ void SDL_SYS_JoystickClose(SDL_Joystick *joystick)
 {
 	dprintf("Closing joystick #%d (AI ID=%d)\n", joystick->index, joystickList[joystick->index].id);
 
-	IAIN->AIN_ReleaseDevice(joystick->hwdata->context, joystick->hwdata->handle);
+	SDL_IAIN->AIN_ReleaseDevice(joystick->hwdata->context, joystick->hwdata->handle);
 	IExec->FreeVec (joystick->hwdata);
 	joystick->hwdata = NULL;
 }
@@ -452,7 +452,7 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 	/*
 	 * Poll device for data
 	 */
-	if (hwdata && IAIN->AIN_ReadDevice(hwdata->context, hwdata->handle, &buffer))
+	if (hwdata && SDL_IAIN->AIN_ReadDevice(hwdata->context, hwdata->handle, &buffer))
 	{
 		int i;
 

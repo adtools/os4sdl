@@ -37,6 +37,9 @@
 
 #include <limits.h>
 
+extern struct GraphicsIFace *SDL_IGraphics;
+extern struct P96IFace      *SDL_IP96;
+
 uint32
 os4video_PFtoPPF(const SDL_PixelFormat *vf)
 {
@@ -276,10 +279,10 @@ os4video_PPFtoPF(SDL_PixelFormat *vformat, uint32 p96Format)
 BOOL
 os4video_PixelFormatFromModeID(SDL_PixelFormat *vformat, uint32 displayID)
 {
-	if (IP96->p96GetModeIDAttr(displayID, P96IDA_ISP96) == FALSE)
+	if (SDL_IP96->p96GetModeIDAttr(displayID, P96IDA_ISP96) == FALSE)
 		return FALSE;
 
-	return os4video_PPFtoPF(vformat, IP96->p96GetModeIDAttr(displayID, P96IDA_RGBFORMAT));
+	return os4video_PPFtoPF(vformat, SDL_IP96->p96GetModeIDAttr(displayID, P96IDA_RGBFORMAT));
 }
 
 BOOL
@@ -309,7 +312,7 @@ os4video_CountModes(const SDL_PixelFormat *format)
 	/* TODO: We need to handle systems with muliple monitors -
 	 * this should probably count modes for a specific monitor
 	 */
-    while ((mode = IGraphics->NextDisplayInfo(mode)) != INVALID_ID)
+    while ((mode = SDL_IGraphics->NextDisplayInfo(mode)) != INVALID_ID)
 	{
 		if ((mode & 0xFF000000) == 0xFF000000)
 		{
@@ -390,13 +393,13 @@ findModeWithPixelFormat (uint32 width, uint32 height, uint32 pixelFormat, uint32
 
 	dprintf("Looking for mode %dx%d with pixel format %d\n", width, height, pixelFormat);
 
-	while ((mode = IGraphics->NextDisplayInfo(mode)) != INVALID_ID)
+	while ((mode = SDL_IGraphics->NextDisplayInfo(mode)) != INVALID_ID)
 	{
 		uint32 modeFormat;
 		uint32 modeWidth;
 		uint32 modeHeight;
 
-		if (IP96->p96GetModeIDAttr(mode,  P96IDA_ISP96) == FALSE)
+		if (SDL_IP96->p96GetModeIDAttr(mode,  P96IDA_ISP96) == FALSE)
 		{
 			dprintf("Skipping non-P96 mode: %08lx\n", mode);
 			continue;
@@ -405,9 +408,9 @@ findModeWithPixelFormat (uint32 width, uint32 height, uint32 pixelFormat, uint32
 		if ((mode & 0xFF000000) == 0xFF000000)
 			continue; /* Mode is unavailable? */
 
-		modeWidth  = IP96->p96GetModeIDAttr(mode, P96IDA_WIDTH);
-		modeHeight = IP96->p96GetModeIDAttr(mode, P96IDA_HEIGHT);
-		modeFormat = IP96->p96GetModeIDAttr(mode, P96IDA_RGBFORMAT);
+		modeWidth  = SDL_IP96->p96GetModeIDAttr(mode, P96IDA_WIDTH);
+		modeHeight = SDL_IP96->p96GetModeIDAttr(mode, P96IDA_HEIGHT);
+		modeFormat = SDL_IP96->p96GetModeIDAttr(mode, P96IDA_RGBFORMAT);
 
 		if (pixelFormat != modeFormat)
 		{
@@ -550,7 +553,7 @@ fillModeArray(const SDL_PixelFormat *format, const SDL_Rect **rectArray, SDL_Rec
 	 * In particular, we need a way to predictably handle systems with
 	 * multiple montors. The current implementation can't do that.
 	 */
-	while (maxCount && (mode = IGraphics->NextDisplayInfo(mode)) != INVALID_ID)
+	while (maxCount && (mode = SDL_IGraphics->NextDisplayInfo(mode)) != INVALID_ID)
 	{
 		if ((mode & 0xFF000000) == 0xFF000000)
 		{
@@ -565,8 +568,8 @@ fillModeArray(const SDL_PixelFormat *format, const SDL_Rect **rectArray, SDL_Rec
 		if (FALSE == os4video_CmpPixelFormat(format, &g))
 			continue;
 
-		width = IP96->p96GetModeIDAttr(mode, P96IDA_WIDTH);
-		height = IP96->p96GetModeIDAttr(mode, P96IDA_HEIGHT);
+		width =  SDL_IP96->p96GetModeIDAttr(mode, P96IDA_WIDTH);
+		height = SDL_IP96->p96GetModeIDAttr(mode, P96IDA_HEIGHT);
 
 		(*rects).x = 0;
 		(*rects).y = 0;
