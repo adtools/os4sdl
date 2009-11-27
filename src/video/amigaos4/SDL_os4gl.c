@@ -43,6 +43,7 @@
 //#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
+extern struct P96IFace *SDL_IP96;
 
 static struct MiniGLIFace *IMiniGL = 0;
 static struct Library *MiniGLBase = 0;
@@ -128,7 +129,7 @@ int	os4video_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value)
 	if (!bm)
 		return -1;
 
-	rgbFormat = IP96->p96GetBitMapAttr(bm, P96BMA_RGBFORMAT);
+	rgbFormat = SDL_IP96->p96GetBitMapAttr(bm, P96BMA_RGBFORMAT);
 
 	if (!os4video_PPFtoPF(&pf, rgbFormat))
 		return -1;

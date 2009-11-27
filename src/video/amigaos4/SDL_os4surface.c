@@ -41,6 +41,11 @@
 //#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
+extern struct GraphicsIFace  *SDL_IGraphics;
+extern struct LayersIFace    *SDL_ILayers;
+extern struct P96IFace       *SDL_IP96;
+extern struct IntuitionIFace *SDL_IIntuition;
+
 #ifdef DEBUG
 static char *get_flags_str(Uint32 flags)
 {
@@ -90,7 +95,7 @@ int os4video_AllocHWSurface(_THIS, SDL_Surface *surface)
 		dprintf("Trying to create %dx%dx%d bitmap\n",
 				surface->w, surface->h, surface->format->BitsPerPixel);
 
-		surface->hwdata->bm = IP96->p96AllocBitMap (surface->w,
+		surface->hwdata->bm = SDL_IP96->p96AllocBitMap (surface->w,
 													surface->h,
 													surface->format->BitsPerPixel,
 													BMF_MINPLANES,
@@ -127,7 +132,7 @@ void os4video_FreeHWSurface(_THIS, SDL_Surface *surface)
 		{
 			/* Yes. Free BitMap */
 			dprintf("Freeing bitmap %p\n", surface->hwdata->bm);
-			IP96->p96FreeBitMap (surface->hwdata->bm);
+			SDL_IP96->p96FreeBitMap (surface->hwdata->bm);
 
 			/*  Free surface hardware record */
 			SaveFreePooled(_this->hidden, surface->hwdata, sizeof(struct private_hwdata));
@@ -150,7 +155,7 @@ int os4video_LockHWSurface(_THIS, SDL_Surface *surface)
 		 * surface or a hardware off-screen surface). We need to get P96 to lock that the
 		 * corresponding bitmap in memory so that we can access the pixels directly
 		 */
-		hwdata->lock = IP96->p96LockBitMap(hwdata->bm, (uint8 *)&hwdata->ri, sizeof(hwdata->ri));
+		hwdata->lock = SDL_IP96->p96LockBitMap(hwdata->bm, (uint8 *)&hwdata->ri, sizeof(hwdata->ri));
 
 		if (hwdata->lock)
 		{
@@ -184,7 +189,7 @@ void os4video_UnlockHWSurface(_THIS, SDL_Surface *surface)
 	struct private_hwdata *hwdata = surface->hwdata;
 
 	if (hwdata->bm)
-		IP96->p96UnlockBitMap(surface->hwdata->bm, surface->hwdata->lock);
+		SDL_IP96->p96UnlockBitMap(surface->hwdata->bm, surface->hwdata->lock);
 
 	surface->hwdata->lock = 0;
 	surface->pixels = (uint8*)0xcccccccc;
@@ -220,7 +225,7 @@ int os4video_FillHWRect(_THIS, SDL_Surface *dst, SDL_Rect *rect, Uint32 color)
 		if (!rp)
 		{
 			if (!tmpras_initialized) {
-				IGraphics->InitRastPort(&tmpras);
+				SDL_IGraphics->InitRastPort(&tmpras);
 				tmpras_initialized = 1;
 			}
 
@@ -241,13 +246,13 @@ int os4video_FillHWRect(_THIS, SDL_Surface *dst, SDL_Rect *rect, Uint32 color)
 						| (((color & format->Gmask) >> format->Gshift) << (format->Gloss + 8))
 						| (((color & format->Bmask) >> format->Bshift) <<  format->Bloss);
 
-			IP96->p96RectFill(rp, xmin, ymin, xmax, ymax, argb_colour);
+			SDL_IP96->p96RectFill(rp, xmin, ymin, xmax, ymax, argb_colour);
 		}
 		else
 		{
 			/* Fall back on graphics lib for palette-mapped surfaces */
-			IGraphics->SetAPen(rp, color);
-			IGraphics->RectFill(rp, xmin, ymin, xmax, ymax);
+			SDL_IGraphics->SetAPen(rp, color);
+			SDL_IGraphics->RectFill(rp, xmin, ymin, xmax, ymax);
 		}
 		return 0;
 	}
@@ -266,13 +271,13 @@ static int os4video_HWAccelBlit(SDL_Surface *src, SDL_Rect *srcrect,
 	static int dst_rp_initialized = 0;
 
 	if (!dst_rp_initialized) {
-		IGraphics->InitRastPort(&dst_rp);
+		SDL_IGraphics->InitRastPort(&dst_rp);
 		dst_rp_initialized = 1;
 	}
 
 	dst_rp.BitMap = dst->hwdata->bm;
 
-	IGraphics->BltBitMapRastPort (src_bm,
+	SDL_IGraphics->BltBitMapRastPort (src_bm,
 								  srcrect->x,
 								  srcrect->y,
 								 &dst_rp,
@@ -333,7 +338,7 @@ int os4video_FlipHWSurface(_THIS, SDL_Surface *surface)
 		/*
 		 * Now try to flip the screen buffers
 		 */
-		if (IIntuition->ChangeScreenBuffer(hidden->scr, dbData->sb[dbData->currentSB]))
+		if (SDL_IIntuition->ChangeScreenBuffer(hidden->scr, dbData->sb[dbData->currentSB]))
 		{
 			/* The flip was succesful. Update our pointer to the off-screen buffer */
 			dbData->currentSB   = 1 - dbData->currentSB;
@@ -388,7 +393,7 @@ static void os4video_OffscreenHook_8bit (struct Hook *hook, struct RastPort *rp,
 
 	/* Attempt to lock destination bitmap (screen) */
 	struct RenderInfo dst_ri;
-	LONG   dst_lock = IP96->p96LockBitMap(rp->BitMap, (uint8 *)&dst_ri, sizeof(dst_ri));
+	LONG   dst_lock = SDL_IP96->p96LockBitMap(rp->BitMap, (uint8 *)&dst_ri, sizeof(dst_ri));
 
 	if (dst_lock)
 	{
@@ -461,7 +466,7 @@ static void os4video_OffscreenHook_8bit (struct Hook *hook, struct RastPort *rp,
 				break;
 		}
 
-		IP96->p96UnlockBitMap(rp->BitMap, dst_lock);
+		SDL_IP96->p96UnlockBitMap(rp->BitMap, dst_lock);
 	}
 	else
 		dprintf("Bitmap lock failed\n");
@@ -486,7 +491,7 @@ void os4video_UpdateRectsOffscreen_8bit(_THIS, int numrects, SDL_Rect *rects)
 	struct Window 				*w      = hidden->win;
 
 	/* We don't want Intuition dead-locking us while we try to do this... */
-	ILayers->LockLayerInfo(&w->WScreen->LayerInfo);
+	SDL_ILayers->LockLayerInfo(&w->WScreen->LayerInfo);
 
 	{
 		/* Current bounds of inner window */
@@ -516,7 +521,7 @@ void os4video_UpdateRectsOffscreen_8bit(_THIS, int numrects, SDL_Rect *rects)
 			start = SDL_GetTicks();
 #endif
 
-			ILayers->DoHookClipRects(&clipHook, w->RPort, &clipRect);
+			SDL_ILayers->DoHookClipRects(&clipHook, w->RPort, &clipRect);
 
 #ifdef PROFILE_UPDATE_RECTS
 			end = SDL_GetTicks();
@@ -525,7 +530,7 @@ void os4video_UpdateRectsOffscreen_8bit(_THIS, int numrects, SDL_Rect *rects)
 		}
 	}
 
-	ILayers->UnlockLayerInfo(&w->WScreen->LayerInfo);
+	SDL_ILayers->UnlockLayerInfo(&w->WScreen->LayerInfo);
 }
 
 /*
@@ -537,7 +542,7 @@ void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 	struct Window               *w      = hidden->win;
 
 	/* We don't want our window changing size while we're doing this */
-	ILayers->LockLayer(0, w->WLayer);
+	SDL_ILayers->LockLayer(0, w->WLayer);
 
 	{
 		/* Current dimensions of inner window */
@@ -550,7 +555,7 @@ void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 		for ( ; numrects > 0; r++, numrects--)
 		{
 			/* Blit rect to screen, constraing rect to bounds of inner window */
-			IGraphics->BltBitMapRastPort(hidden->offScreenBuffer.bitmap,
+			SDL_IGraphics->BltBitMapRastPort(hidden->offScreenBuffer.bitmap,
 										 r->x,
 										 r->y,
 										 w->RPort,
@@ -562,5 +567,5 @@ void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 		}
 	}
 
-	ILayers->UnlockLayer(w->WLayer);
+	SDL_ILayers->UnlockLayer(w->WLayer);
 }

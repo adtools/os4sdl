@@ -50,13 +50,13 @@ static struct Library	*iconbase;
 static struct Library	*workbenchbase;
 static struct Library	*keymapbase;
 
-struct GraphicsIFace	*IGraphics;
-struct LayersIFace		*ILayers;
-struct P96IFace			*IP96;
-struct IntuitionIFace	*IIntuition;
-struct IconIFace		*IIcon;
-struct WorkbenchIFace	*IWorkbench;
-struct KeymapIFace		*IKeymap;
+struct GraphicsIFace	*SDL_IGraphics;
+struct LayersIFace		*SDL_ILayers;
+struct P96IFace			*SDL_IP96;
+struct IntuitionIFace	*SDL_IIntuition;
+struct IconIFace		*SDL_IIcon;
+struct WorkbenchIFace	*SDL_IWorkbench;
+struct KeymapIFace		*SDL_IKeymap;
 
 #define MIN_LIB_VERSION	51
 
@@ -73,15 +73,15 @@ static BOOL open_libraries(void)
 	if (!gfxbase || !layersbase || !p96base || !intuitionbase || !iconbase || !workbenchbase || !keymapbase)
 		return FALSE;
 
-	IGraphics  = (struct GraphicsIFace *)  IExec->GetInterface(gfxbase, "main", 1, NULL);
-	ILayers    = (struct LayersIFace *)    IExec->GetInterface(layersbase, "main", 1, NULL);
-	IP96       = (struct P96IFace *)       IExec->GetInterface(p96base, "main", 1, NULL);
-	IIntuition = (struct IntuitionIFace *) IExec->GetInterface(intuitionbase, "main", 1, NULL);
-	IIcon      = (struct IconIFace *)      IExec->GetInterface(iconbase, "main", 1, NULL);
-	IWorkbench = (struct WorkbenchIFace *) IExec->GetInterface(workbenchbase, "main", 1, NULL);
-	IKeymap    = (struct KeymapIFace *)    IExec->GetInterface(keymapbase, "main", 1, NULL);
+	SDL_IGraphics  = (struct GraphicsIFace *)  IExec->GetInterface(gfxbase, "main", 1, NULL);
+	SDL_ILayers    = (struct LayersIFace *)    IExec->GetInterface(layersbase, "main", 1, NULL);
+	SDL_IP96       = (struct P96IFace *)       IExec->GetInterface(p96base, "main", 1, NULL);
+	SDL_IIntuition = (struct IntuitionIFace *) IExec->GetInterface(intuitionbase, "main", 1, NULL);
+	SDL_IIcon      = (struct IconIFace *)      IExec->GetInterface(iconbase, "main", 1, NULL);
+	SDL_IWorkbench = (struct WorkbenchIFace *) IExec->GetInterface(workbenchbase, "main", 1, NULL);
+	SDL_IKeymap    = (struct KeymapIFace *)    IExec->GetInterface(keymapbase, "main", 1, NULL);
 
-	if (!IGraphics || !ILayers || !IP96 || !IIntuition || !IIcon || !IWorkbench || !IKeymap)
+	if (!SDL_IGraphics || !SDL_ILayers || !SDL_IP96 || !SDL_IIntuition || !SDL_IIcon || !SDL_IWorkbench || !SDL_IKeymap)
 		return FALSE;
 
 	return TRUE;
@@ -89,33 +89,33 @@ static BOOL open_libraries(void)
 
 static BOOL close_libraries(void)
 {
-	if (IKeymap) {
-		IExec->DropInterface((struct Interface *) IKeymap);
-		IKeymap = NULL;
+	if (SDL_IKeymap) {
+		IExec->DropInterface((struct Interface *) SDL_IKeymap);
+		SDL_IKeymap = NULL;
 	}
-	if (IWorkbench) {
-		IExec->DropInterface((struct Interface *) IWorkbench);
-		IWorkbench = NULL;
+	if (SDL_IWorkbench) {
+		IExec->DropInterface((struct Interface *) SDL_IWorkbench);
+		SDL_IWorkbench = NULL;
 	}
-	if (IIcon) {
-		IExec->DropInterface((struct Interface *) IIcon);
-		IIcon = NULL;
+	if (SDL_IIcon) {
+		IExec->DropInterface((struct Interface *) SDL_IIcon);
+		SDL_IIcon = NULL;
 	}
-	if (IIntuition) {
-		IExec->DropInterface((struct Interface *) IIntuition);
-		IIntuition = NULL;
+	if (SDL_IIntuition) {
+		IExec->DropInterface((struct Interface *) SDL_IIntuition);
+		SDL_IIntuition = NULL;
 	}
-	if (IP96) {
-		IExec->DropInterface((struct Interface *) IP96);
-		IP96 = NULL;
+	if (SDL_IP96) {
+		IExec->DropInterface((struct Interface *) SDL_IP96);
+		SDL_IP96 = NULL;
 	}
-	if (ILayers) {
-		IExec->DropInterface((struct Interface *) ILayers);
-		ILayers = NULL;
+	if (SDL_ILayers) {
+		IExec->DropInterface((struct Interface *) SDL_ILayers);
+		SDL_ILayers = NULL;
 	}
-	if (IGraphics) {
-		IExec->DropInterface((struct Interface *) IGraphics);
-		IGraphics = NULL;
+	if (SDL_IGraphics) {
+		IExec->DropInterface((struct Interface *) SDL_IGraphics);
+		SDL_IGraphics = NULL;
 	}
 
 	if (keymapbase) {
@@ -259,7 +259,7 @@ os4video_DeleteDevice(_THIS)
 
 		if (_this->hidden->currentIcon)
 		{
-			IIcon->FreeDiskObject(_this->hidden->currentIcon);
+			SDL_IIcon->FreeDiskObject(_this->hidden->currentIcon);
 		}
 
 		close_libraries();
@@ -399,14 +399,14 @@ os4video_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	/* Get the default public screen. For the time being
 	 * we don't care about its screen mode. Assume it's RTG.
 	 */
-	hidden->publicScreen = IIntuition->LockPubScreen(NULL);
+	hidden->publicScreen = SDL_IIntuition->LockPubScreen(NULL);
 	if (!hidden->publicScreen)
 	{
 		SDL_SetError("Cannot lock default PubScreen");
 		return -1;
 	}
 
-	if (!IIntuition->GetScreenAttr(hidden->publicScreen, SA_DisplayID, &displayID, sizeof(uint32)))
+	if (!SDL_IIntuition->GetScreenAttr(hidden->publicScreen, SA_DisplayID, &displayID, sizeof(uint32)))
 	{
 		SDL_SetError("Cannot get screen attributes\n");
 		return -1;
@@ -444,7 +444,7 @@ os4video_VideoQuit(_THIS)
 	dprintf("Checking pubscreen\n");
 	if (hidden->publicScreen)
 	{
-		IIntuition->UnlockPubScreen(NULL, hidden->publicScreen);
+		SDL_IIntuition->UnlockPubScreen(NULL, hidden->publicScreen);
 		hidden->publicScreen = NULL;
 		for (i=0; i<RGBFB_MaxFormats; i++)
 		{
@@ -555,8 +555,8 @@ static struct Screen *openSDLscreen(int width, int height, uint32 modeId)
 	uint32         screen_leftedge = 0;
 
 	/* Get the real width/height of this mode */
-	screen_width  = IP96->p96GetModeIDAttr(modeId, P96IDA_WIDTH);
-	screen_height = IP96->p96GetModeIDAttr(modeId, P96IDA_HEIGHT);
+	screen_width  = SDL_IP96->p96GetModeIDAttr(modeId, P96IDA_WIDTH);
+	screen_height = SDL_IP96->p96GetModeIDAttr(modeId, P96IDA_HEIGHT);
 
 	/* If requested width is smaller than this mode's width, then centre
 	 * the screen horizontally.
@@ -569,7 +569,7 @@ static struct Screen *openSDLscreen(int width, int height, uint32 modeId)
 		screen_leftedge = (screen_width - width) / 2;
 
 	/* Open the screen */
-	scr = IIntuition->OpenScreenTags(NULL,
+	scr = SDL_IIntuition->OpenScreenTags(NULL,
 									 SA_Left,		screen_leftedge,
 									 SA_Width, 		width,
 									 SA_Height,		height,
@@ -614,10 +614,10 @@ static struct Screen *openSDLscreen(int width, int height, uint32 modeId)
 		/* Clear screen's bitmap */
 		struct RastPort tmpRP;
 
-		IGraphics->InitRastPort(&tmpRP);
+		SDL_IGraphics->InitRastPort(&tmpRP);
 		tmpRP.BitMap = scr->RastPort.BitMap;
 
-		IP96->p96RectFill(&tmpRP, 0, 0, width, height, 0);
+		SDL_IP96->p96RectFill(&tmpRP, 0, 0, width, height, 0);
 	}
 
 	dprintf("Screen opened\n");
@@ -636,7 +636,7 @@ static BOOL getVisibleScreenBox (struct Screen *screen, struct IBox *screenBox)
 							 * relative to top/left corner of the overscan area */
 
 	/* Get the screen's display clip */
-	if (!IIntuition->GetScreenAttr (screen, SA_DClip, &dclip, sizeof dclip))
+	if (!SDL_IIntuition->GetScreenAttr (screen, SA_DClip, &dclip, sizeof dclip))
 		return FALSE;
 
 	/* Work out the geometry of the visible area
@@ -700,10 +700,10 @@ static void do_blackBackFill (const struct Hook *hook, struct RastPort *rp, cons
 	struct RastPort backfillRP;
 
 	/* Create our own temporary rastport so that we can render safely */
-	IGraphics->InitRastPort(&backfillRP);
+	SDL_IGraphics->InitRastPort(&backfillRP);
 	backfillRP.BitMap = rp->BitMap;
 
-	IP96->p96RectFill(&backfillRP, rect->MinX, rect->MinY, rect->MaxX, rect->MaxY, 0);
+	SDL_IP96->p96RectFill(&backfillRP, rect->MinX, rect->MinY, rect->MaxX, rect->MaxY, 0);
 }
 
 static const struct Hook blackBackFillHook = {
@@ -759,7 +759,7 @@ openSDLwindow(int width, int height, struct Screen *screen, struct MsgPort *user
 		/* In windowed mode, use our custom backfill to clear the layer to black for
 		 * high/true-colour screens; otherwise, use the default clear-to-pen-0
 		 * backfill */
-		if (IP96->p96GetBitMapAttr(screen->RastPort.BitMap, P96BMA_DEPTH) > 8)
+		if (SDL_IP96->p96GetBitMapAttr(screen->RastPort.BitMap, P96BMA_DEPTH) > 8)
 			backfillHook = &blackBackFillHook;
 		else
 			backfillHook = LAYERS_BACKFILL;
@@ -769,7 +769,7 @@ openSDLwindow(int width, int height, struct Screen *screen, struct MsgPort *user
 
 	dprintf("Trying to open window at (%d,%d) of size (%dx%d)\n", wX, wY, width, height);
 
-	w = IIntuition->OpenWindowTags (NULL,
+	w = SDL_IIntuition->OpenWindowTags (NULL,
 									WA_Left,			wX,
 									WA_Top,				wY,
 									WA_InnerWidth,		width,
@@ -791,7 +791,7 @@ openSDLwindow(int width, int height, struct Screen *screen, struct MsgPort *user
 			 *
 			 * What's a useful minimum size, anyway?
 			 */
-			IIntuition->WindowLimits(w,
+			SDL_IIntuition->WindowLimits(w,
 									 w->BorderLeft + w->BorderRight  + 100,
 									 w->BorderTop  + w->BorderBottom + 100,
 									 -1,
@@ -799,15 +799,15 @@ openSDLwindow(int width, int height, struct Screen *screen, struct MsgPort *user
 		}
 
 		/* Set window titles */
-		IIntuition->SetWindowTitles(w, caption, caption);
+		SDL_IIntuition->SetWindowTitles(w, caption, caption);
 
 		/* We're ready to go. Bring screen to front
 		 * and activate window.
 		 */
 		if (flags & SDL_FULLSCREEN)
-			IIntuition->ScreenToFront(screen);
+			SDL_IIntuition->ScreenToFront(screen);
 
-		IIntuition->ActivateWindow(w);
+		SDL_IIntuition->ActivateWindow(w);
 	}
 
 	return w;
@@ -832,7 +832,7 @@ initOffScreenBuffer(struct OffScreenBuffer *offBuffer, uint32 width, uint32 heig
 	dprintf("Allocating a %dx%dx%d off-screen buffer with rgbtype=%d\n", width, height, bpp, p96format);
 
 	/* Allocate private p96 bitmap using the pixel format */
-	offBuffer->bitmap = IP96->p96AllocBitMap(width, height, bpp, BMF_CLEAR | BMF_USERPRIVATE, NULL, p96format);
+	offBuffer->bitmap = SDL_IP96->p96AllocBitMap(width, height, bpp, BMF_CLEAR | BMF_USERPRIVATE, NULL, p96format);
 
 	if (offBuffer->bitmap != NULL)
 	{
@@ -840,8 +840,8 @@ initOffScreenBuffer(struct OffScreenBuffer *offBuffer, uint32 width, uint32 heig
 		offBuffer->height =  height;
 		offBuffer->format = *format;
 
-		offBuffer->pixels =  (void*)IP96->p96GetBitMapAttr(offBuffer->bitmap, P96BMA_MEMORY);
-	    offBuffer->pitch  =         IP96->p96GetBitMapAttr(offBuffer->bitmap, P96BMA_BYTESPERROW);
+		offBuffer->pixels =  (void*)SDL_IP96->p96GetBitMapAttr(offBuffer->bitmap, P96BMA_MEMORY);
+	    offBuffer->pitch  =         SDL_IP96->p96GetBitMapAttr(offBuffer->bitmap, P96BMA_BYTESPERROW);
 
 		success = TRUE;
 	}
@@ -860,7 +860,7 @@ freeOffScreenBuffer(struct OffScreenBuffer *offBuffer)
 	{
 		dprintf("Freeing off-screen buffer\n");
 
-		IP96->p96FreeBitMap(offBuffer->bitmap);
+		SDL_IP96->p96FreeBitMap(offBuffer->bitmap);
 
 		offBuffer->bitmap = NULL;
 	}
@@ -893,8 +893,8 @@ resizeOffScreenBuffer(struct OffScreenBuffer *offBuffer, uint32 width, uint32 he
 static BOOL
 initDoubleBuffering(struct DoubleBufferData *dbData, struct Screen *screen)
 {
-	dbData->sb[0] = IIntuition->AllocScreenBuffer(screen, NULL, SB_SCREEN_BITMAP);
-	dbData->sb[1] = IIntuition->AllocScreenBuffer(screen, NULL, 0);
+	dbData->sb[0] = SDL_IIntuition->AllocScreenBuffer(screen, NULL, SB_SCREEN_BITMAP);
+	dbData->sb[1] = SDL_IIntuition->AllocScreenBuffer(screen, NULL, 0);
 
 	dbData->SafeToFlip_MsgPort  = IExec->AllocSysObjectTags( ASOT_PORT, TAG_DONE );
 	dbData->SafeToWrite_MsgPort = IExec->AllocSysObjectTags( ASOT_PORT, TAG_DONE );
@@ -904,9 +904,9 @@ initDoubleBuffering(struct DoubleBufferData *dbData, struct Screen *screen)
 		dprintf("Failed\n");
 
 		if (dbData->sb[0])
-			IIntuition->FreeScreenBuffer(screen, dbData->sb[0]);
+			SDL_IIntuition->FreeScreenBuffer(screen, dbData->sb[0]);
 		if (dbData->sb[1])
-			IIntuition->FreeScreenBuffer(screen, dbData->sb[1]);
+			SDL_IIntuition->FreeScreenBuffer(screen, dbData->sb[1]);
 		if (dbData->SafeToFlip_MsgPort)
 			IExec->FreeSysObject(ASOT_PORT,dbData->SafeToFlip_MsgPort);
 		if (dbData->SafeToWrite_MsgPort)
@@ -954,9 +954,9 @@ freeDoubleBuffering(struct DoubleBufferData *dbData, struct Screen *screen)
 	dbData->SafeToWrite_MsgPort = 0;
 
 	if (dbData->sb[0])
-		IIntuition->FreeScreenBuffer(screen, dbData->sb[0]);
+		SDL_IIntuition->FreeScreenBuffer(screen, dbData->sb[0]);
 	if (dbData->sb[1])
-		IIntuition->FreeScreenBuffer(screen, dbData->sb[1]);
+		SDL_IIntuition->FreeScreenBuffer(screen, dbData->sb[1]);
 
 	dbData->sb[0] = 0;
 	dbData->sb[1] = 0;
@@ -980,17 +980,17 @@ os4video_DeleteCurrentDisplay(_THIS, SDL_Surface *current, BOOL keepOffScreenBuf
 #endif
 
 	if (hidden->scr) {
-		IIntuition->ScreenToBack (hidden->scr);
+		SDL_IIntuition->ScreenToBack (hidden->scr);
 
 		/* Wait for next frame to make sure screen has
 		 * gone to back */
-		IGraphics->WaitTOF();
+		SDL_IGraphics->WaitTOF();
 	}
 
 	if (hidden->win)
 	{
 		dprintf("Closing window\n");
-		IIntuition->CloseWindow(hidden->win);
+		SDL_IIntuition->CloseWindow(hidden->win);
 		hidden->win = 0;
 	}
 
@@ -1002,7 +1002,7 @@ os4video_DeleteCurrentDisplay(_THIS, SDL_Surface *current, BOOL keepOffScreenBuf
 
 		dprintf("Closing screen\n");
 
-		IIntuition->CloseScreen(hidden->scr);
+		SDL_IIntuition->CloseScreen(hidden->scr);
 		hidden->scr = 0;
 	}
 
@@ -1063,7 +1063,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		hidden->scr = 0;
 
 		/* Check depth of screen */
-		hidden->screenP96Format = IP96->p96GetBitMapAttr(scr->RastPort.BitMap, P96BMA_RGBFORMAT);
+		hidden->screenP96Format = SDL_IP96->p96GetBitMapAttr(scr->RastPort.BitMap, P96BMA_RGBFORMAT);
 		scr_depth				= os4video_RTGFB2Bits(hidden->screenP96Format);
 
 		dprintf("Screen depth:%d pixel format:%d\n", scr_depth, hidden->screenP96Format);
@@ -1117,7 +1117,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		 * the early Radeon drivers only supported little-endian modes) which
 		 * we cannot express to SDL with a simple shift and mask alone.
 		 */
-		fmt = IP96->p96GetModeIDAttr(modeId, P96IDA_RGBFORMAT);
+		fmt = SDL_IP96->p96GetModeIDAttr(modeId, P96IDA_RGBFORMAT);
 
 		if (fmt == RGBFB_R5G6B5PC || fmt == RGBFB_R5G5B5PC
 			|| fmt == RGBFB_B5G6R5PC || fmt == RGBFB_B5G5R5PC)
@@ -1139,7 +1139,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		}
 
 		/* Check depth of screen */
-		hidden->screenP96Format = IP96->p96GetBitMapAttr(scr->RastPort.BitMap, P96BMA_RGBFORMAT);
+		hidden->screenP96Format = SDL_IP96->p96GetBitMapAttr(scr->RastPort.BitMap, P96BMA_RGBFORMAT);
 		scr_depth       		= os4video_RTGFB2Bits(hidden->screenP96Format);
 
 		dprintf("Screen depth:%d pixel format:%d\n", scr_depth, hidden->screenP96Format);
@@ -1211,7 +1211,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		}
 		else
 		{
-			IIntuition->CloseScreen(hidden->scr);
+			SDL_IIntuition->CloseScreen(hidden->scr);
 			hidden->scr = NULL;
 			SDL_OutOfMemory();
 			return FALSE;
@@ -1361,7 +1361,7 @@ os4video_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bp
 
 		dprintf("Resizing window: %dx%d\n", width, height);
 
-		IIntuition->ChangeWindowBox(w,
+		SDL_IIntuition->ChangeWindowBox(w,
 									w->LeftEdge,
 									w->TopEdge,
 									w->BorderLeft + w->BorderRight  + width,
@@ -1500,7 +1500,7 @@ int	os4video_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 
 		/* Load it */
 		dprintf("Loading\n");
-		IGraphics->LoadRGB32(&hidden->scr->ViewPort, colTable);
+		SDL_IGraphics->LoadRGB32(&hidden->scr->ViewPort, colTable);
 	}
 
 	dprintf("Done\n");
