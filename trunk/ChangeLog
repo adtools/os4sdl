@@ -1,29 +1,44 @@
 
-Xeron's Unofficial Build of SDL for OS4!
-
 2010-03-16 10:40 apalmate
 
- * Added support to load dinamically MiniGL functions
- * Fixed SDL_GL_STENCIL_SIZE and SDL_GL_DEPTH_SIZE values
- 
-SDL-1.2.13-XU0.2 (xxxx-xx-xx)
------------------------------
+	* Added support to load dinamically MiniGL functions
+	* Fixed SDL_GL_STENCIL_SIZE and SDL_GL_DEPTH_SIZE values
 
- * Merged the OS4 support into the 1.2.13 codebase
- * Only requests a stencil buffer from MiniGL if required <Hans De Ruiter>
- * Added support for CD-ROM
+2009-11-27 ??:?? pgordon
+
+	* Global library interfaces are now prefixed with "SDL_"
+
+2009-09-15 ??:?? pgordon
+
+	* Included an Amiga version string
+
+2009-09-11 ??:?? pgordon
+
+	* Disabled some debug
+	* Joystick code no longer assumes axis 0 is X and axis 1 is Y
+
+2009-07-10 ??:?? pgordon
+
+	* Removed redundant check for 8-bit mode
+
+2009-07-10 ??:?? pgordon
+
+	* Removed unnecessary CopyMem call
+	* Updated the readme file
+
+SDL-1.2.13-XU0.2 (xxxx-xx-xx)
+
+	* Merged the OS4 support into the 1.2.13 codebase
+	* Only requests a stencil buffer from MiniGL if required <Hans De Ruiter>
+	* Added support for CD-ROM
 
 
 SDL-1.2.11-XU0.1 (2009-03-09)
------------------------------
 
- * Compiled with GCC 4.2.4 and the latest SDK
- * Bad SDL programs that don't explicitly close all opened joysticks
-   before calling SDL_Quit() no longer hang on exit (like Giddy3... oops :)
-
-
-
------------ Pre-Xeron stuff below --------------
+	* Compiled with GCC 4.2.4 and the latest SDK
+	* Bad SDL programs that don't explicitly close all opened joysticks
+	  before calling SDL_Quit() no longer hang on exit (like Giddy3...
+	  oops :)
 
 2008-01-30 11:13  richardd
 
