@@ -42,9 +42,7 @@ Supported features
 
 * OpenGL surfaces are mostly supported and require minigl.library. Only
   full-screen OpenGL surfaces may currently be opened, the deprecated
-  SDL_OPENGLBLIT surfaces don't work yet, and the dynamic loading of an
-  OpenGL library is not supported. OpenGL support may not yet be terribly
-  useful with the current MiniGL implementation. 
+  SDL_OPENGLBLIT surfaces don't work yet.
 
 * Input-grabbing in windowed mode.
 
@@ -76,6 +74,7 @@ Richard Drummond <evilrich@rcrummond.net>
 Hans-Joerg Frieden <Hans-JoergF@hyperion-entertainment.biz>
 Thomas Frieden <ThomasF@hyperion-entertainment.biz>
 Peter Gordon <pete@petergordon.org.uk>
+Andrea Palmate
 Juergen Schober
 
 
