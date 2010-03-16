@@ -179,6 +179,8 @@ void 			os4video_FreeHWSurface(_THIS, SDL_Surface *surface);
 int 			os4video_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value);
 int 			os4video_GL_MakeCurrent(_THIS);
 void 			os4video_GL_SwapBuffers(_THIS);
+void *			os4video_GL_GetProcAddress(_THIS, const char *proc);
+int 			os4video_GL_LoadLibrary(_THIS, const char *path);
 void 			os4video_SetCaption(_THIS, const char *title, const char *icon);
 void 			os4video_SetIcon(_THIS, SDL_Surface *icon, Uint8 *mask);
 int 			os4video_IconifyWindow(_THIS);
@@ -356,6 +358,8 @@ os4video_CreateDevice(int devnum)
 	os4video_device->ToggleFullScreen = os4video_ToggleFullScreen;
 
 #if SDL_VIDEO_OPENGL
+	os4video_device->GL_LoadLibrary = os4video_GL_LoadLibrary;
+	os4video_device->GL_GetProcAddress = os4video_GL_GetProcAddress;
 	os4video_device->GL_GetAttribute = os4video_GL_GetAttribute;
 	os4video_device->GL_MakeCurrent = os4video_GL_MakeCurrent;
 	os4video_device->GL_SwapBuffers = os4video_GL_SwapBuffers;
@@ -1042,7 +1046,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		if (_this->gl_config.double_buffer)
 			flags |= SDL_DOUBLEBUF;
 	}
-	
+
 	/*
 	 * Set up hardware record for this display surface
 	 */

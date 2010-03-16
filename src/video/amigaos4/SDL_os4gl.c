@@ -166,11 +166,11 @@ int	os4video_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value)
 			return 0;
 
 		case SDL_GL_DEPTH_SIZE:
-			glGetIntegerv(GL_DEPTH_BITS, value);
+			*value = _this->gl_config.depth_size;
 			return 0;
 
 		case SDL_GL_STENCIL_SIZE:
-			glGetIntegerv(GL_STENCIL_BITS, value);
+			*value = _this->gl_config.stencil_size;
 			return 0;
 
 		case SDL_GL_STEREO:
@@ -204,6 +204,20 @@ void os4video_GL_SwapBuffers(_THIS)
 		mglSetBitmap(hidden->screenHWData.bm);
 	}
 }
+
+void *os4video_GL_GetProcAddress(_THIS, const char *proc) {
+	void *func = NULL;
+	func = (void *)AmiGetGLProc(proc);
+	return func;
+}
+
+int os4video_GL_LoadLibrary(_THIS, const char *path) {
+	/* Library is always open */
+	_this->gl_config.driver_loaded = 1;
+
+	return 0;
+}
+
 /*
 void glPopClientAttrib(void)
 {

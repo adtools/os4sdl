@@ -1,6 +1,11 @@
 
 Xeron's Unofficial Build of SDL for OS4!
 
+2010-03-16 10:40 apalmate
+
+ * Added support to load dinamically MiniGL functions
+ * Fixed SDL_GL_STENCIL_SIZE and SDL_GL_DEPTH_SIZE values
+ 
 SDL-1.2.13-XU0.2 (xxxx-xx-xx)
 -----------------------------
 
