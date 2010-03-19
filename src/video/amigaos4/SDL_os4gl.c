@@ -54,6 +54,7 @@ static struct Library *MiniGLBase = 0;
 
 extern struct IntuitionIFace *SDL_IIntuition;
 extern struct GraphicsIFace  *SDL_IGraphics;
+extern struct P96IFace       *SDL_IP96;
 
 /* The client program needs access to this context pointer
  * to be able to make GL calls. This presents no problems when
@@ -66,10 +67,13 @@ struct GLContextIFace *mini_CurrentContext = 0;
 /*
  * Open MiniGL and initialize GL context
  */
-int os4video_GL_Init(_THIS, void *bm)
+int os4video_GL_Init(_THIS)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
     int w,h;
+
+	if( hidden->dontdeletecontext ) return 0;
+
 	printf("Creating context for window %p\n", hidden->win);
 
 	dprintf("Initializing OpenGL\n");
@@ -94,19 +98,19 @@ int os4video_GL_Init(_THIS, void *bm)
 	/* afx */
 	SDL_IIntuition->GetWindowAttrs(hidden->win,WA_InnerWidth,&w,WA_InnerHeight,&h,TAG_DONE);
 
-	if(!(hidden->m_frontBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
+	if(!(hidden->m_frontBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
 	{
 		SDL_SetError("Failed to allocate a Bitmap for the front buffer");
 		return -1;
 	}
 
-	if(!(hidden->m_backBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
+	if(!(hidden->m_backBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
 	{
 		SDL_SetError("Failed to allocate a Bitmap for the back buffer");
-		SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
+		SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
 		return -1;
 	}
-
+	
 	hidden->IGL = IMiniGL->CreateContextTags(
                                      MGLCC_PrivateBuffers, 	2,
                                      MGLCC_FrontBuffer,		hidden->m_frontBuffer,
@@ -139,16 +143,18 @@ void os4video_GL_Term(_THIS)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
 
+	if( hidden->dontdeletecontext ) return;
+
 	if (hidden->OpenGL)
 	{
         if(hidden->m_frontBuffer)
         {
-            SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
+            SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
             hidden->m_frontBuffer = NULL;
         }
         if(hidden->m_backBuffer)
         {
-            SDL_IGraphics->FreeBitMap(hidden->m_backBuffer);
+            SDL_IP96->p96FreeBitMap(hidden->m_backBuffer);
             hidden->m_backBuffer = NULL;
         }
 

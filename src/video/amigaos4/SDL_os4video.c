@@ -195,7 +195,7 @@ void 			os4video_CheckMouseMode(_THIS);
 void 			os4video_InitOSKeymap(_THIS);
 void 			os4video_PumpEvents(_THIS);
 
-int 			os4video_GL_Init(_THIS, void *);
+int 			os4video_GL_Init(_THIS);
 void 			os4video_GL_Term(_THIS);
 
 extern BOOL os4video_PixelFormatFromModeID(SDL_PixelFormat *vformat, uint32 displayID);
@@ -399,6 +399,8 @@ os4video_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
 	uint32 displayID;
+	
+	hidden->dontdeletecontext = FALSE;
 
 	/* Get the default public screen. For the time being
 	 * we don't care about its screen mode. Assume it's RTG.
@@ -1262,7 +1264,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 	{
 		dprintf("Checking for OpenGL\n");
 
-		if (os4video_GL_Init(_this, current->hwdata->bm) != 0)
+		if (os4video_GL_Init(_this) != 0)
 		{
 			dprintf("Failed OpenGL init\n");
 			os4video_DeleteCurrentDisplay(_this, current, !newOffScreenSurface);
@@ -1551,12 +1553,55 @@ int os4video_ToggleFullScreen(_THIS, int on)
 	/* Make sure we're the only one */
 	SDL_Lock_EventThread();
 
+  hidden->dontdeletecontext = TRUE;
+
 	/* Close old display */
 	os4video_DeleteCurrentDisplay(_this, current, TRUE);
 
 	/* Open the new one */
 	if (os4video_CreateDisplay(_this, current, w, h, bpp, newFlags, FALSE))
 	{
+		hidden->dontdeletecontext = FALSE;
+
+#if SDL_VIDEO_OPENGL
+		if (oldFlags & SDL_OPENGL)
+		{
+			/* Dimensions changed reallocate and update bitmaps. */
+			if(hidden->m_frontBuffer)
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
+				hidden->m_frontBuffer = NULL;
+			}
+			if(hidden->m_backBuffer)
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_backBuffer);
+				hidden->m_backBuffer = NULL;
+			}
+
+			if(!(hidden->m_frontBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
+			{
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return -1;
+			}
+
+			if(!(hidden->m_backBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return -1;
+			}
+
+			hidden->IGL->MGLUpdateContextTags(
+                                     MGLCC_FrontBuffer,		hidden->m_frontBuffer,
+                                     MGLCC_BackBuffer,		hidden->m_backBuffer,
+							TAG_DONE);
+
+	        hidden->IGL->GLViewport(0,0,w,h);
+		}
+#endif
+
 		SDL_Unlock_EventThread();
 		ResetMouseState(_this);
 
@@ -1565,41 +1610,6 @@ int os4video_ToggleFullScreen(_THIS, int on)
 		if (on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
 
-#if SDL_VIDEO_OPENGL
-		if (oldFlags & SDL_OPENGL)
-		{
-			/* Dimensions changed reallocate and update bitmaps. */
-			if(hidden->m_frontBuffer)
-			{
-				SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
-				hidden->m_frontBuffer = NULL;
-			}
-			if(hidden->m_backBuffer)
-			{
-				SDL_IGraphics->FreeBitMap(hidden->m_backBuffer);
-				hidden->m_backBuffer = NULL;
-			}
-			if(!(hidden->m_frontBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
-			{
-				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
-				SDL_Quit();
-				return -1;
-			}
-
-			if(!(hidden->m_backBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
-			{
-				SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
-				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
-				SDL_Quit();
-				return -1;
-			}
-			hidden->IGL->MGLUpdateContextTags(
-							MGLCC_FrontBuffer,hidden->m_frontBuffer,
-							MGLCC_BackBuffer,hidden->m_backBuffer,
-							TAG_DONE);
-	        hidden->IGL->GLViewport(0,0,w,h);
-		}
-#endif
 
 		dprintf("Success\n");
 	        dprintf("Obtained flags:%s\n", get_flags_str(current->flags));
@@ -1610,17 +1620,63 @@ int os4video_ToggleFullScreen(_THIS, int on)
 	dprintf("Switch failed, re-setting old display\n");
 	if (os4video_CreateDisplay(_this, current, w, h, bpp, oldFlags, FALSE))
 	{
+		hidden->dontdeletecontext = FALSE;
+
+#if SDL_VIDEO_OPENGL
+		if (oldFlags & SDL_OPENGL)
+		{
+			/* Dimensions changed reallocate and update bitmaps. */
+			if(hidden->m_frontBuffer)
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
+				hidden->m_frontBuffer = NULL;
+			}
+			if(hidden->m_backBuffer)
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_backBuffer);
+				hidden->m_backBuffer = NULL;
+			}
+
+			if(!(hidden->m_frontBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
+			{
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return -1;
+			}
+
+			if(!(hidden->m_backBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return -1;
+			}
+			hidden->IGL->MGLUpdateContextTags(
+							MGLCC_FrontBuffer,hidden->m_frontBuffer,
+							MGLCC_BackBuffer,hidden->m_backBuffer,
+							TAG_DONE);
+
+	        hidden->IGL->GLViewport(0,0,w,h);
+		}
+#endif
+
 		SDL_Unlock_EventThread();
 		ResetMouseState(_this);
 
 		_this->UpdateRects(_this, 1, &screenRect);
 
-		if (!on && bpp == 8)
+		if (on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
 
 		dprintf("No Success\n");
 		return 0;
 	}
+	
+	hidden->dontdeletecontext=FALSE;
+#if SDL_VIDEO_OPENGL
+	if (hidden->OpenGL)
+		os4video_GL_Term(_this);
+#endif
 
 	/* If we get here, we're botched. */
 	dprintf("Fatal error: Can't restart video\n");

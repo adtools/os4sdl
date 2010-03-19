@@ -1012,6 +1012,13 @@ $(objects)/SDL_dummyaudio.lo: ./src/audio/dummy/SDL_dummyaudio.c \
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c ./src/audio/dummy/SDL_dummyaudio.c  -o $@
 
 
+$(objects)/SDL_os4_wrapper.lo: ./src/video/amigaos4/SDL_os4_wrapper.c \
+	./include/SDL_config.h \
+	./include/SDL_platform.h \
+
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c ./src/video/amigaos4/SDL_os4_wrapper.c  -o $@
+
+
 $(objects)/SDL_os4blit.lo: ./src/video/amigaos4/SDL_os4blit.c \
 	./include/begin_code.h \
 	./include/close_code.h \
@@ -1156,25 +1163,6 @@ $(objects)/SDL_os4video.lo: ./src/video/amigaos4/SDL_os4video.c \
 	./src/video/amigaos4/SDL_os4video.h \
 
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c ./src/video/amigaos4/SDL_os4video.c  -o $@
-
-$(objects)/SDL_os4wrapper.lo: ./src/video/amigaos4/SDL_os4wrapper.c \
-	./include/begin_code.h \
-	./include/close_code.h \
-	./include/SDL_config.h \
-	./include/SDL_error.h \
-	./include/SDL_mouse.h \
-	./include/SDL_opengl.h \
-	./include/SDL_platform.h \
-	./include/SDL_rwops.h \
-	./include/SDL_stdinc.h \
-	./include/SDL_syswm.h \
-	./include/SDL_version.h \
-	./include/SDL_video.h \
-	./src/events/../video/../video/SDL_sysvideo.h \
-	./src/video/amigaos4/../../main/amigaos4/SDL_os4debug.h \
-	./src/video/amigaos4/SDL_os4video.h \
-
-	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c ./src/video/amigaos4/SDL_os4wrapper.c  -o $@
 
 
 $(objects)/SDL_os4wm.lo: ./src/video/amigaos4/SDL_os4wm.c \
