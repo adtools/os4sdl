@@ -131,6 +131,12 @@ struct SDL_PrivateVideoData
 	struct AppIcon *        currentAppIcon; 				/* Only valid when iconified */
 	struct MsgPort *		appPort;
 	BOOL					OpenGL;
+
+	/* This are new to allow the new MiniGL buffer mode */
+
+	struct GLContextIFace *IGL;
+	struct BitMap *m_frontBuffer;
+	struct BitMap *m_backBuffer;
 };
 
 #endif

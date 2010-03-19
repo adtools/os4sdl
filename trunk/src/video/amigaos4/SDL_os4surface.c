@@ -98,7 +98,7 @@ int os4video_AllocHWSurface(_THIS, SDL_Surface *surface)
 		surface->hwdata->bm = SDL_IP96->p96AllocBitMap (surface->w,
 													surface->h,
 													surface->format->BitsPerPixel,
-													BMF_MINPLANES,
+													BMF_MINPLANES | BMF_DISPLAYABLE,
 													friend_bitmap,
 													0);
 

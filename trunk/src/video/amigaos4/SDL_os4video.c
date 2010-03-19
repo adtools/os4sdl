@@ -1038,10 +1038,9 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 
 	dprintf("Creating a %dx%dx%d display\n", width, height, bpp);
 
-	/* FIXME */
 	if (flags & SDL_OPENGL)
 	{
-		flags |= SDL_FULLSCREEN|SDL_HWSURFACE;
+		flags |= SDL_HWSURFACE;
 
 		if (_this->gl_config.double_buffer)
 			flags |= SDL_DOUBLEBUF;
@@ -1526,11 +1525,13 @@ int os4video_ToggleFullScreen(_THIS, int on)
 	dprintf("Trying to toggle fullscreen\n");
 	dprintf("Current flags:%s\n", get_flags_str(current->flags));
 
+	#if 0
 	if (oldFlags & (SDL_HWSURFACE|SDL_OPENGL))
 	{
-		dprintf("Can't toggle a HW or GL surface\n");
+		printf("Can't toggle a HW or GL surface\n");
 		return 0;
 	}
+	#endif
 
 	if (on)
 	{
@@ -1563,6 +1564,42 @@ int os4video_ToggleFullScreen(_THIS, int on)
 
 		if (on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
+
+#if SDL_VIDEO_OPENGL
+		if (oldFlags & SDL_OPENGL)
+		{
+			/* Dimensions changed reallocate and update bitmaps. */
+			if(hidden->m_frontBuffer)
+			{
+				SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
+				hidden->m_frontBuffer = NULL;
+			}
+			if(hidden->m_backBuffer)
+			{
+				SDL_IGraphics->FreeBitMap(hidden->m_backBuffer);
+				hidden->m_backBuffer = NULL;
+			}
+			if(!(hidden->m_frontBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
+			{
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return -1;
+			}
+
+			if(!(hidden->m_backBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
+			{
+				SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return -1;
+			}
+			hidden->IGL->MGLUpdateContextTags(
+							MGLCC_FrontBuffer,hidden->m_frontBuffer,
+							MGLCC_BackBuffer,hidden->m_backBuffer,
+							TAG_DONE);
+	        hidden->IGL->GLViewport(0,0,w,h);
+		}
+#endif
 
 		dprintf("Success\n");
 	        dprintf("Obtained flags:%s\n", get_flags_str(current->flags));
