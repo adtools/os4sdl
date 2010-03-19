@@ -522,7 +522,9 @@ static void AmiglIndexf( GLfloat c )
 
  void AmiglIndexi( GLint c )
  {
+#ifndef __amigaos4__
    glIndexi(c);
+#endif
  }
 
 static void AmiglIndexs( GLshort c )
@@ -1257,10 +1259,17 @@ static void AmiglClearStencil( GLint s ) {
 
 static void AmiglTexGend( GLenum coord, GLenum pname, GLdouble param )
  {
+#ifndef __amigaos4__
    glTexGend(coord, pname, param);
+#endif
  }
 
-static void AmiglTexGenf( GLenum coord, GLenum pname, GLfloat param ) { glTexGenf(coord, pname, param); }
+static void AmiglTexGenf( GLenum coord, GLenum pname, GLfloat param )
+{
+#ifndef __amigaos4__
+	glTexGenf(coord, pname, param);
+#endif
+}
 static void AmiglTexGeni( GLenum coord, GLenum pname, GLint param )       { glTexGeni(coord, pname, param); }
 
 static void AmiglTexGendv( GLenum coord, GLenum pname, const GLdouble *params )
@@ -2195,7 +2204,9 @@ static void AmiglPointParameterfEXT( GLenum pname, GLfloat param ) {
  }
 
 static void AmiglPointParameterfvEXT( GLenum pname, GLfloat *params ) {
+#ifndef __amigaos4__
         glPointParameterfvEXT(pname, params);
+#endif
  }
 
 /* GL_MESA_window_pos */
