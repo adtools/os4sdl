@@ -47,6 +47,8 @@ struct SDL_PrivateAudioData
     int                   audio_IsOpen;
     Uint32                audio_MixBufferSize;
     Uint8                *audio_MixBuffer[2];
+    
+    APTR                  audio_Mutex;
 };
 
 typedef struct SDL_PrivateAudioData OS4AudioData;

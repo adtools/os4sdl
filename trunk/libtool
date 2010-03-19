@@ -144,7 +144,7 @@ exeext=""
 
 # Additional compiler flags for building library objects.
 pic_flag=" -fPIC -DPIC"
-pic_mode=default
+pic_mode=yes
 
 # What is the maximum length of a command?
 max_cmd_len=8192
@@ -7313,7 +7313,7 @@ exeext=""
 
 # Additional compiler flags for building library objects.
 pic_flag=" -fPIC -DPIC"
-pic_mode=default
+pic_mode=yes
 
 # What is the maximum length of a command?
 max_cmd_len=8192
@@ -7340,7 +7340,7 @@ dlopen_self=unknown
 dlopen_self_static=unknown
 
 # Compiler flag to prevent dynamic linking.
-link_static_flag="-static"
+link_static_flag=""
 
 # Compiler flag to turn off builtin functions.
 no_builtin_flag=" -fno-builtin"
@@ -7395,11 +7395,11 @@ striplib="strip --strip-unneeded"
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
-predep_objects="/SDK/newlib/lib/shcrtbegin.o"
+predep_objects=""
 
 # Dependencies to place after the objects being linked to create a
 # shared library.
-postdep_objects="/SDK/newlib/lib/shcrtend.o"
+postdep_objects=""
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
@@ -7407,11 +7407,11 @@ predeps=""
 
 # Dependencies to place after the objects being linked to create a
 # shared library.
-postdeps="-lstdc++ -lm -lgcc -lc -lgcc"
+postdeps=""
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/SDK/newlib/lib -L/GCC/lib/gcc/ppc-amigaos/4.2.4/newlib/lib -L/SDK/local/newlib/lib -L/SDK/local/common/lib -L/Work/Programming/SDK/gcc/bin/../lib/gcc/ppc-amigaos/4.2.4 -L/Work/Programming/SDK/gcc/bin/../lib/gcc -L/gcc/lib/gcc/ppc-amigaos/4.2.4 -L/Work/Programming/SDK/gcc/bin/../lib/gcc/ppc-amigaos/4.2.4/../../../../ppc-amigaos/lib -L/gcc/lib/gcc/ppc-amigaos/4.2.4/../../../../ppc-amigaos/lib -L/Work/Programming/SDK/gcc/bin/../lib/gcc/ppc-amigaos/4.2.4/../../.. -L/gcc/lib/gcc/ppc-amigaos/4.2.4/../../.."
+compiler_lib_search_path=""
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method="pass_all"

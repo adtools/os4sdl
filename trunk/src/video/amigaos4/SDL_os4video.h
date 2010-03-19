@@ -133,6 +133,7 @@ struct SDL_PrivateVideoData
 	BOOL					OpenGL;
 
 	/* This are new to allow the new MiniGL buffer mode */
+	BOOL dontdeletecontext;
 
 	struct GLContextIFace *IGL;
 	struct BitMap *m_frontBuffer;
