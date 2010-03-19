@@ -35,7 +35,10 @@
 #include "SDL_os4blit.h"
 
 #include <proto/exec.h>
+#include <proto/graphics.h>
+#include <proto/intuition.h>
 #include <proto/Picasso96API.h>
+#include <graphics/blitattr.h>
 
 #include <GL/gl.h>
 #include <mgl/gl.h>
@@ -47,7 +50,10 @@ extern struct P96IFace *SDL_IP96;
 
 static struct MiniGLIFace *IMiniGL = 0;
 static struct Library *MiniGLBase = 0;
-static struct GLContextIFace *IGL;
+//static struct GLContextIFace *IGL;
+
+extern struct IntuitionIFace *SDL_IIntuition;
+extern struct GraphicsIFace  *SDL_IGraphics;
 
 /* The client program needs access to this context pointer
  * to be able to make GL calls. This presents no problems when
@@ -63,6 +69,8 @@ struct GLContextIFace *mini_CurrentContext = 0;
 int os4video_GL_Init(_THIS, void *bm)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
+    int w,h;
+	printf("Creating context for window %p\n", hidden->win);
 
 	dprintf("Initializing OpenGL\n");
 	MiniGLBase = IExec->OpenLibrary("minigl.library", 0);
@@ -83,17 +91,39 @@ int os4video_GL_Init(_THIS, void *bm)
 		return -1;
 	}
 
-	dprintf("Creating context from bitmap %p\n", bm);
-	IGL = IMiniGL->CreateContextTags(
-							MGLCC_Bitmap,                   bm,
-							MGLCC_StencilBuffer,    ((_this->gl_config.stencil_size > 0) ? TRUE : FALSE),
-						TAG_DONE);
+	/* afx */
+	SDL_IIntuition->GetWindowAttrs(hidden->win,WA_InnerWidth,&w,WA_InnerHeight,&h,TAG_DONE);
 
-	if (IGL)
+	if(!(hidden->m_frontBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
+	{
+		SDL_SetError("Failed to allocate a Bitmap for the front buffer");
+		return -1;
+	}
+
+	if(!(hidden->m_backBuffer = SDL_IGraphics->AllocBitMap(w,h,8,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap)))
+	{
+		SDL_SetError("Failed to allocate a Bitmap for the back buffer");
+		SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
+		return -1;
+	}
+
+	hidden->IGL = IMiniGL->CreateContextTags(
+                                     MGLCC_PrivateBuffers, 	2,
+                                     MGLCC_FrontBuffer,		hidden->m_frontBuffer,
+                                     MGLCC_BackBuffer,		hidden->m_backBuffer,
+                                     MGLCC_Buffers,  		2,             /* double buffered */
+                                     MGLCC_PixelDepth,      16,  // fixed at 16 for now 32 causes issues on SAM440ep with onboard graphics , make user setable later
+                                     MGLCC_StencilBuffer,   TRUE,
+                                     MGLCC_VertexBufferSize,1 << 17,
+									 TAG_DONE);
+
+	if (hidden->IGL)
 	{
 		struct GLContextIFace **target;
 
-		mglMakeCurrent(IGL);
+        hidden->IGL->GLViewport(0,0,w,h);
+
+		mglMakeCurrent(hidden->IGL);
 		mglLockMode(MGL_LOCK_SMART);
 		hidden->OpenGL = TRUE;
 
@@ -111,7 +141,18 @@ void os4video_GL_Term(_THIS)
 
 	if (hidden->OpenGL)
 	{
-		IGL->DeleteContext();
+        if(hidden->m_frontBuffer)
+        {
+            SDL_IGraphics->FreeBitMap(hidden->m_frontBuffer);
+            hidden->m_frontBuffer = NULL;
+        }
+        if(hidden->m_backBuffer)
+        {
+            SDL_IGraphics->FreeBitMap(hidden->m_backBuffer);
+            hidden->m_backBuffer = NULL;
+        }
+
+		hidden->IGL->DeleteContext();
 		IExec->DropInterface((struct Interface *)IMiniGL);
 		IExec->CloseLibrary(MiniGLBase);
 
@@ -157,7 +198,6 @@ int	os4video_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value)
 			return 0;
 
 		case SDL_GL_DOUBLEBUFFER:
-//			*value = 1;			/* FIXME */
 			*value = _this->gl_config.double_buffer;
 			return 0;
 
@@ -195,13 +235,57 @@ int	os4video_GL_MakeCurrent(_THIS)
 void os4video_GL_SwapBuffers(_THIS)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
+	int w,h;
+    GLint buf;
+	struct BitMap *temp;
+
 	SDL_Surface *video = SDL_VideoSurface;
 
-	if (video && video->flags & SDL_FULLSCREEN)
+//	if (video && video->flags & SDL_FULLSCREEN)
+	if (video)
 	{
 		mglUnlockDisplay();
-		_this->FlipHWSurface(_this, video);
-		mglSetBitmap(hidden->screenHWData.bm);
+
+		SDL_IIntuition->GetWindowAttrs(hidden->win, WA_InnerWidth, &w, WA_InnerHeight, &h, TAG_DONE);
+
+		hidden->IGL->MGLWaitGL(); /* besure all has finished before we start blitting (testing to find lockup cause */
+
+		//_this->FlipHWSurface(_this, video);
+
+        glGetIntegerv(GL_DRAW_BUFFER,&buf);
+        if(buf == GL_BACK)
+        {
+            SDL_IGraphics->BltBitMapRastPort(hidden->m_backBuffer,0,0,hidden->win->RPort,hidden->win->BorderLeft,hidden->win->BorderTop,w,h,0xC0);
+        }
+        else if(buf == GL_FRONT)
+        {
+            SDL_IGraphics->BltBitMapRastPort(hidden->m_frontBuffer,0,0,hidden->win->RPort,hidden->win->BorderLeft,hidden->win->BorderTop,w,h,0xC0);
+        }
+
+        /* copy back into front */
+        SDL_IGraphics->BltBitMapTags(BLITA_Source,	hidden->m_backBuffer,
+								 	 BLITA_SrcType,	BLITT_BITMAP,
+ 								 	 BLITA_SrcX,	0,
+ 								 	 BLITA_SrcY,	0,
+								 	 BLITA_Dest,	hidden->m_frontBuffer,
+								 	 BLITA_DestType,BLITT_BITMAP,
+								 	 BLITA_DestX,	0,
+								 	 BLITA_DestY,	0,
+								 	 BLITA_Width,	w,
+								 	 BLITA_Height,	h,
+								 	 BLITA_Minterm,	0xC0,
+								 	 TAG_DONE);
+
+        temp = hidden->m_frontBuffer;
+        hidden->m_frontBuffer = hidden->m_backBuffer;
+        hidden->m_backBuffer = temp;
+
+		hidden->IGL->MGLUpdateContextTags(
+							MGLCC_FrontBuffer,hidden->m_frontBuffer,
+							MGLCC_BackBuffer, hidden->m_backBuffer,
+							TAG_DONE);
+
+		//mglSetBitmap(hidden->screenHWData.bm);
 	}
 }
 
