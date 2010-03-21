@@ -40,9 +40,8 @@ Supported features
 * Altivec acceleration for many plain, colour-keyed and alpha blits between
   software surfaces only.
 
-* OpenGL surfaces are mostly supported and require minigl.library. Only
-  full-screen OpenGL surfaces may currently be opened, the deprecated
-  SDL_OPENGLBLIT surfaces don't work yet.
+* OpenGL surfaces are mostly supported and require minigl.library. The
+  deprecated SDL_OPENGLBLIT surfaces don't work yet.
 
 * Input-grabbing in windowed mode.
 
