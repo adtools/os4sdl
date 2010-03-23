@@ -1665,7 +1665,7 @@ int os4video_ToggleFullScreen(_THIS, int on)
 
 		_this->UpdateRects(_this, 1, &screenRect);
 
-		if (on && bpp == 8)
+		if (!on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
 
 		dprintf("No Success\n");
