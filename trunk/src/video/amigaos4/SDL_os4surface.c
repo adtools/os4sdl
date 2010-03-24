@@ -555,7 +555,7 @@ void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 		for ( ; numrects > 0; r++, numrects--)
 		{
 			/* Blit rect to screen, constraing rect to bounds of inner window */
-			SDL_IGraphics->BltBitMapRastPort(hidden->offScreenBuffer.bitmap,
+			SDL_IGraphics->BltBitMapRastPort(hidden->m_backBuffer,
 										 r->x,
 										 r->y,
 										 w->RPort,
