@@ -74,9 +74,9 @@ int os4video_GL_Init(_THIS)
 
 	if( hidden->dontdeletecontext ) return 0;
 
-	printf("Creating context for window %p\n", hidden->win);
+//	printf("Creating context for window %p\n", hidden->win);
 
-	dprintf("Initializing OpenGL\n");
+//	dprintf("Initializing OpenGL\n");
 	MiniGLBase = IExec->OpenLibrary("minigl.library", 0);
 	if (!MiniGLBase)
 	{

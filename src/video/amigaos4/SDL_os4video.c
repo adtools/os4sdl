@@ -1073,7 +1073,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 
 		dprintf("Screen depth:%d pixel format:%d\n", scr_depth, hidden->screenP96Format);
 
-		if (scr_depth > 8)
+		if( (scr_depth > 8) && ( (flags&SDL_OPENGL) == 0 ) )
 		{
 			/* Mark the surface as windowed */
 			flags          &= ~(SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
@@ -1262,17 +1262,17 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 #if SDL_VIDEO_OPENGL
 	if (flags & SDL_OPENGL)
 	{
-		dprintf("Checking for OpenGL\n");
+//		dprintf("Checking for OpenGL\n");
 
 		if (os4video_GL_Init(_this) != 0)
 		{
-			dprintf("Failed OpenGL init\n");
+//			dprintf("Failed OpenGL init\n");
 			os4video_DeleteCurrentDisplay(_this, current, !newOffScreenSurface);
 			return FALSE;
 		}
 		else
 		{
-			dprintf("OpenGL init successfull\n");
+//			dprintf("OpenGL init successfull\n");
 			current->flags |= SDL_OPENGL;
 
 			/* Hack. We assert DOUBLEBUF and HWSURFACE above to simplify
@@ -1285,7 +1285,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		}
 	}
 #endif
-	dprintf("Done\n");
+//	dprintf("Done\n");
 
 	return TRUE;
 }
@@ -1605,8 +1605,7 @@ int os4video_ToggleFullScreen(_THIS, int on)
 		SDL_Unlock_EventThread();
 		ResetMouseState(_this);
 
-		if( !(oldFlags&SDL_OPENGL) )
-			_this->UpdateRects(_this, 1, &screenRect);
+		_this->UpdateRects(_this, 1, &screenRect);
 
 		if (on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
@@ -1664,8 +1663,7 @@ int os4video_ToggleFullScreen(_THIS, int on)
 		SDL_Unlock_EventThread();
 		ResetMouseState(_this);
 
-		if( !(oldFlags&SDL_OPENGL) )
-			_this->UpdateRects(_this, 1, &screenRect);
+		_this->UpdateRects(_this, 1, &screenRect);
 
 		if (!on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
