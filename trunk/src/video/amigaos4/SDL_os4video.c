@@ -1044,8 +1044,8 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 	{
 		flags |= SDL_HWSURFACE;
 
-		if (_this->gl_config.double_buffer)
-			flags |= SDL_DOUBLEBUF;
+		// The double buffering is handled seperately for OpenGL
+		flags &= ~SDL_DOUBLEBUF;
 	}
 
 	/*
@@ -1076,8 +1076,8 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 		if(scr_depth > 8)
 		{
 			/* Mark the surface as windowed */
-      if( (flags&SDL_OPENGL) == 0 )
-  			flags          &= ~(SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
+			if( (flags&SDL_OPENGL) == 0 )
+				flags &= ~(SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
 			current->flags  = flags;
 		}
 		else
@@ -1090,12 +1090,12 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 			dprintf("Forcing full-screenmode\n");
 
 			flags |= SDL_FULLSCREEN;
-      if( flags&SDL_OPENGL )
-      {
-        flags &= ~SDL_RESIZABLE;
-      } else {
-        flags &= ~(SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
-      }
+			if( flags&SDL_OPENGL )
+			{
+				flags &= ~SDL_RESIZABLE;
+			} else {
+				flags &= ~(SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
+			}
 		}
 	}
 
@@ -1281,13 +1281,13 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 //			dprintf("OpenGL init successfull\n");
 			current->flags |= SDL_OPENGL;
 
-			/* Hack. We assert DOUBLEBUF and HWSURFACE above to simplify
+			/* Hack. We assert HWSURFACE above to simplify
 			 * initialization of GL surfaces, but we cannot pass these flags
 			 * back to SDL.
 			 * Need to re-work surface set-up code so that this nonsense isn't
 			 * necessary
 			 */
-			current->flags &= ~(SDL_DOUBLEBUF | SDL_HWSURFACE);
+			current->flags &= ~SDL_HWSURFACE;
 		}
 	}
 #endif
