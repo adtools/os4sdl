@@ -1073,10 +1073,11 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 
 		dprintf("Screen depth:%d pixel format:%d\n", scr_depth, hidden->screenP96Format);
 
-		if( (scr_depth > 8) && ( (flags&SDL_OPENGL) == 0 ) )
+		if(scr_depth > 8)
 		{
 			/* Mark the surface as windowed */
-			flags          &= ~(SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
+      if( (flags&SDL_OPENGL) == 0 )
+  			flags          &= ~(SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF);
 			current->flags  = flags;
 		}
 		else
