@@ -1089,7 +1089,12 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 			dprintf("Forcing full-screenmode\n");
 
 			flags |= SDL_FULLSCREEN;
-			flags &= ~(SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
+      if( flags&SDL_OPENGL )
+      {
+        flags &= ~SDL_RESIZABLE;
+      } else {
+        flags &= ~(SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
+      }
 		}
 	}
 
