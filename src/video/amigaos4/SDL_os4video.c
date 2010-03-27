@@ -1040,6 +1040,10 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 
 	dprintf("Creating a %dx%dx%d display\n", width, height, bpp);
 
+	// ALWAYS set prealloc
+	current->flags |= SDL_PREALLOC;
+	flags |= SDL_PREALLOC;
+
 	if (flags & SDL_OPENGL)
 	{
 		flags |= SDL_HWSURFACE;
@@ -1146,7 +1150,7 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 			_this->UpdateRects = os4video_UpdateRectsNone;
 
 			/* Mark the surface as fullscreen */
-			current->flags |= SDL_HWSURFACE | SDL_PREALLOC ;
+			current->flags |= SDL_HWSURFACE;
 		}
 
 		/* Check depth of screen */
@@ -1188,8 +1192,6 @@ os4video_CreateDisplay(_THIS, SDL_Surface *current, int width, int height, int b
 			SDL_OutOfMemory();
 			return FALSE;
 		}
-
-		current->flags |= SDL_PREALLOC;
 
 		/* We render to this off-screen bitmap */
 		current->hwdata->bm = hidden->offScreenBuffer.bitmap;
