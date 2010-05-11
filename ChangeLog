@@ -1,4 +1,8 @@
 
+2010-05-11 pgordon / apalmate
+
+	* Fixed windowed mode for OpenGL
+
 2010-03-16 10:40 apalmate
 
 	* Added support to load dinamically MiniGL functions
