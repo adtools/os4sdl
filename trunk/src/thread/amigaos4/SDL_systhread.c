@@ -61,8 +61,8 @@ struct JoinNode
 	struct Task *sigTask;
 };
 
-void thread_init(void) __attribute__((constructor));
-void thread_term(void) __attribute__((destructor));
+void _INIT_thread_init(void) __attribute__((constructor));
+void _EXIT_thread_term(void) __attribute__((destructor));
 
 
 void plistInit(struct PList *list)
@@ -158,7 +158,7 @@ static inline __attribute__((always_inline)) void set_r2(uint32 r2)
 	__asm volatile ("mr 2, %0" :: "r" (r2));
 }
 
-void thread_init(void)
+void _INIT_thread_init(void)
 {
 	struct Process *me = (struct Process *)IExec->FindTask(0);
 
@@ -183,7 +183,7 @@ int kill_thread(struct ThreadNode *node, struct ThreadNode *ref)
 }
 
 
-void thread_term(void)
+void _EXIT_thread_term(void)
 {
 	dprintf("Killing all remaining threads\n");
 

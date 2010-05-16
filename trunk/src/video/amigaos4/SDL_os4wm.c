@@ -59,10 +59,10 @@ struct IOStdReq  *inputReq = 0;
 struct MsgPort   *inputPort = 0;
 
 
-void __CreateInput(void) __attribute__((constructor));
-void __DeleteInput(void) __attribute__((destructor));
+void _INIT_CreateInput(void) __attribute__((constructor));
+void _EXIT_DeleteInput(void) __attribute__((destructor));
 
-void __CreateInput(void)
+void _INIT_CreateInput(void)
 {
 	inputPort = IExec->AllocSysObjectTags(ASOT_PORT, TAG_DONE);
 	if (inputPort)
@@ -86,7 +86,7 @@ void __CreateInput(void)
 	IExec->FreeSysObject(ASOT_PORT, inputPort);
 }
 
-void __DeleteInput(void)
+void _EXIT_DeleteInput(void)
 {
 	if (inputReq)
 	{
