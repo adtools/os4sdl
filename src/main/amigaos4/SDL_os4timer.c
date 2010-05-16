@@ -58,10 +58,10 @@ struct TimeVal os4timer_starttime;
  */
 struct TimerIFace *ITimer = 0;
 
-void __os4timer_startup(void)  __attribute__((constructor));
-void __os4timer_shutdown(void) __attribute__((destructor));
+void _INIT_os4timer_startup(void)  __attribute__((constructor));
+void _EXIT_os4timer_shutdown(void) __attribute__((destructor));
 
-void __os4timer_startup(void)
+void _INIT_os4timer_startup(void)
 {
 	struct ExecBase *sysbase = (struct ExecBase*) IExec->Data.LibBase;
 
@@ -74,7 +74,7 @@ void __os4timer_startup(void)
 	ITimer->GetSysTime(&os4timer_starttime);
 }
 
-void __os4timer_shutdown(void)
+void _EXIT_os4timer_shutdown(void)
 {
 	IExec->DropInterface((struct Interface *)ITimer);
 }
