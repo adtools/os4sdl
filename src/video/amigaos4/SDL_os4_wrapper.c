@@ -21,6 +21,8 @@
 
    AmigaOS4/MiniGL version by andrea@amigasoft.net
 
+   20100520 Added all ARB functions that was missing in the firts version
+
    20100316 first version with minigl.library 2.2 functions (unsupported functions
    			are wrapped into an #ifndef __amigaos4__
 
@@ -2685,6 +2687,41 @@ static const GLubyte* AmigluGetString( GLenum name )
 }
 #endif
 
+/*
+ *
+ * Multitexturing
+ *
+ */
+static void AmiglClientActiveTextureARB(GLenum texture)
+{
+	return glClientActiveTextureARB(texture);
+}
+
+static void AmiglActiveTextureARB(GLenum unit)
+{
+	return glActiveTextureARB(unit);
+}
+
+static void AmiglMultiTexCoord2fARB(GLenum unit, GLfloat s, GLfloat t)
+{
+	return glMultiTexCoord2fARB(unit, s, t);
+}
+
+static void AmiglMultiTexCoord2fvARB(GLenum unit, GLfloat *v)
+{
+	return glMultiTexCoord2fvARB(unit, v);
+}
+
+static void AmiglMultiTexCoord4fARB(GLenum unit, GLfloat s, GLfloat t, GLfloat r, GLfloat q)
+{
+	return glMultiTexCoord4fARB(unit, s, t, r, q);
+}
+
+static void AmiglMultiTexCoord4fvARB(GLenum unit, GLfloat *v)
+{
+	return glMultiTexCoord4fvARB(unit, v);
+}
+
 struct MyGLFunc
 {
    CONST_STRPTR name;
@@ -3032,7 +3069,6 @@ void *AmiGetGLProc(const char *proc)
      { "glLoadName", AmiglLoadName },
      { "glPushName", AmiglPushName },
      { "glPopName", AmiglPopName },
-   #if 1
      { "glBlendEquationEXT", AmiglBlendEquationEXT },
      { "glBlendColorEXT", AmiglBlendColorEXT },
      { "glPolygonOffsetEXT", AmiglPolygonOffsetEXT },
@@ -3163,8 +3199,14 @@ void *AmiGetGLProc(const char *proc)
      { "glCopyTexSubImage3D", AmiglCopyTexSubImage3D },
      { "glLockArraysEXT", AmiglLockArraysEXT },
      { "glUnlockArraysEXT", AmiglUnlockArraysEXT },
-   #endif
-
+/* multitexturing */
+     { "glClientActiveTextureARB", AmiglClientActiveTextureARB },
+     { "glActiveTextureARB", AmiglActiveTextureARB },
+     { "glMultiTexCoord2fARB", AmiglMultiTexCoord2fARB },
+     { "glMultiTexCoord2fvARB", AmiglMultiTexCoord2fvARB },
+     { "glMultiTexCoord4fARB", AmiglMultiTexCoord4fARB },
+     { "glMultiTexCoord4fvARB", AmiglMultiTexCoord4fvARB },
+     { "glClientActiveTextureARB", AmiglClientActiveTextureARB },
 	#if 0
      { "gluLookAt", AmigluLookAt },
      { "gluOrtho2D", AmigluOrtho2D },
