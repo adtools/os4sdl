@@ -76,7 +76,7 @@ int os4video_GL_Init(_THIS)
 
 //	printf("Creating context for window %p\n", hidden->win);
 
-//	dprintf("Initializing OpenGL\n");
+	dprintf("Initializing OpenGL.. ");
 	MiniGLBase = IExec->OpenLibrary("minigl.library", 0);
 	if (!MiniGLBase)
 	{
@@ -95,7 +95,6 @@ int os4video_GL_Init(_THIS)
 		return -1;
 	}
 
-	/* afx */
 	SDL_IIntuition->GetWindowAttrs(hidden->win,WA_InnerWidth,&w,WA_InnerHeight,&h,TAG_DONE);
 
 	if(!(hidden->m_frontBuffer = SDL_IP96->p96AllocBitMap(w,h,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
@@ -110,7 +109,7 @@ int os4video_GL_Init(_THIS)
 		SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
 		return -1;
 	}
-	
+
 	hidden->IGL = IMiniGL->CreateContextTags(
                                      MGLCC_PrivateBuffers, 	2,
                                      MGLCC_FrontBuffer,		hidden->m_frontBuffer,
@@ -161,6 +160,8 @@ void os4video_GL_Term(_THIS)
 		hidden->IGL->DeleteContext();
 		IExec->DropInterface((struct Interface *)IMiniGL);
 		IExec->CloseLibrary(MiniGLBase);
+
+		_this->gl_config.driver_loaded = 0;
 
 		hidden->OpenGL = FALSE;
 	}
@@ -297,6 +298,15 @@ void os4video_GL_SwapBuffers(_THIS)
 
 void *os4video_GL_GetProcAddress(_THIS, const char *proc) {
 	void *func = NULL;
+
+	if ( !_this->gl_config.driver_loaded )
+	{
+		if (os4video_GL_Init(_this) != 0)
+		{
+			return NULL;
+		}
+	}
+
 	func = (void *)AmiGetGLProc(proc);
 	return func;
 }
