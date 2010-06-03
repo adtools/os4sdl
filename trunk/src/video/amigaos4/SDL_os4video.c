@@ -1328,7 +1328,7 @@ os4video_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bp
 	int success = TRUE;
 
 	const Uint32 flagMask = SDL_HWPALETTE | SDL_DOUBLEBUF | SDL_FULLSCREEN
-						  | SDL_OPENGL | SDL_OPENGLBLIT | SDL_RESIZABLE | SDL_NOFRAME;
+						  | SDL_OPENGL | SDL_OPENGLBLIT | SDL_RESIZABLE | SDL_NOFRAME | SDL_ANYFORMAT;
 
 	dprintf("Requesting new video mode %dx%dx%d\n", width, height, bpp);
 	dprintf("Requested flags: %s\n", get_flags_str(flags));
