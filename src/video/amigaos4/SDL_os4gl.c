@@ -124,6 +124,8 @@ int os4video_GL_Init(_THIS)
 	{
 		struct GLContextIFace **target;
 
+		_this->gl_config.driver_loaded = 1;
+
         hidden->IGL->GLViewport(0,0,w,h);
 
 		mglMakeCurrent(hidden->IGL);
@@ -133,7 +135,10 @@ int os4video_GL_Init(_THIS)
 		return 0;
 	}
 	else
+	{
+		_this->gl_config.driver_loaded = 0;
 		SDL_SetError("Failed to create MiniGL context");
+	}
 
 	return -1;
 }

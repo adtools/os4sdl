@@ -399,7 +399,7 @@ os4video_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
 	uint32 displayID;
-	
+
 	hidden->dontdeletecontext = FALSE;
 
 	/* Get the default public screen. For the time being
@@ -1388,6 +1388,44 @@ os4video_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bp
 		current->pixels = hidden->offScreenBuffer.pixels;
 		current->pitch  = hidden->offScreenBuffer.pitch;
 
+#if SDL_VIDEO_OPENGL
+		if ((current->flags & SDL_OPENGL) == SDL_OPENGL)
+		{
+			/* Dimensions changed reallocate and update bitmaps. */
+			if(hidden->m_frontBuffer)
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
+				hidden->m_frontBuffer = NULL;
+			}
+			if(hidden->m_backBuffer)
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_backBuffer);
+				hidden->m_backBuffer = NULL;
+			}
+
+			if(!(hidden->m_frontBuffer = SDL_IP96->p96AllocBitMap(width,height,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
+			{
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return NULL;
+			}
+
+			if(!(hidden->m_backBuffer = SDL_IP96->p96AllocBitMap(width,height,16,BMF_MINPLANES | BMF_DISPLAYABLE,hidden->win->RPort->BitMap,0)))
+			{
+				SDL_IP96->p96FreeBitMap(hidden->m_frontBuffer);
+				dprintf("Fatal error: Can't allocate memory for buffer bitmap\n");
+				SDL_Quit();
+				return NULL;
+			}
+			hidden->IGL->MGLUpdateContextTags(
+							MGLCC_FrontBuffer,hidden->m_frontBuffer,
+							MGLCC_BackBuffer,hidden->m_backBuffer,
+							TAG_DONE);
+
+	        hidden->IGL->GLViewport(0,0,width,height);
+		}
+#endif
+
 		SDL_Unlock_EventThread();
 
 		if (!success)
@@ -1535,14 +1573,6 @@ int os4video_ToggleFullScreen(_THIS, int on)
 	dprintf("Trying to toggle fullscreen\n");
 	dprintf("Current flags:%s\n", get_flags_str(current->flags));
 
-	#if 0
-	if (oldFlags & (SDL_HWSURFACE|SDL_OPENGL))
-	{
-		printf("Can't toggle a HW or GL surface\n");
-		return 0;
-	}
-	#endif
-
 	if (on)
 	{
 		newFlags |= SDL_FULLSCREEN;
@@ -1561,7 +1591,7 @@ int os4video_ToggleFullScreen(_THIS, int on)
 	/* Make sure we're the only one */
 	SDL_Lock_EventThread();
 
-  hidden->dontdeletecontext = TRUE;
+  	hidden->dontdeletecontext = TRUE;
 
 	/* Close old display */
 	os4video_DeleteCurrentDisplay(_this, current, TRUE);
@@ -1679,7 +1709,7 @@ int os4video_ToggleFullScreen(_THIS, int on)
 		dprintf("No Success\n");
 		return 0;
 	}
-	
+
 	hidden->dontdeletecontext=FALSE;
 #if SDL_VIDEO_OPENGL
 	if (hidden->OpenGL)
