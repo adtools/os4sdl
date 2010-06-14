@@ -24,7 +24,7 @@ INCLUDE = -I./include
 CFLAGS  = -O2 
 EXTRA_CFLAGS = -I./include -D_GNU_SOURCE=1 -DMINIGL
 LDFLAGS = 
-EXTRA_LDFLAGS =  -lGL -lGLU
+EXTRA_LDFLAGS =  -lm -lGL -lGLU
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 INSTALL = /SDK/Local/C/ginstall -c
 NASM	=  
