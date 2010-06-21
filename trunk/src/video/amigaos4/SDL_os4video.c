@@ -464,9 +464,9 @@ os4video_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
 
-	if ((flags & (SDL_FULLSCREEN | SDL_HWSURFACE)) != (SDL_FULLSCREEN | SDL_HWSURFACE))
+	if ((flags & SDL_FULLSCREEN) != SDL_FULLSCREEN)
 	{
-		/* Unless fullscreen/hardware surfaces were requested, claim we support any size */
+		/* Unless fullscreen is requested, claim we support any size */
 		return (SDL_Rect **)-1;
 	}
 
