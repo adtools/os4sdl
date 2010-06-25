@@ -78,6 +78,10 @@ struct MyIntuiMessage
 void
 os4video_InitOSKeymap(_THIS)
 {
+	int i;
+	for (i=0; i<128; i++)
+		rawkey_table[i] = SDLK_UNKNOWN;
+
 	map(0x45, SDLK_ESCAPE);
 	map(0x50, SDLK_F1);
 	map(0x51, SDLK_F2);
@@ -91,7 +95,6 @@ os4video_InitOSKeymap(_THIS)
 	map(0x59, SDLK_F10);
 	map(0x4B, SDLK_F11);
 	map(0x6F, SDLK_F12);
-	map(0x00, SDLK_BACKQUOTE);
 	map(0x01, SDLK_1);
 	map(0x02, SDLK_2);
 	map(0x03, SDLK_3);
@@ -102,9 +105,6 @@ os4video_InitOSKeymap(_THIS)
 	map(0x08, SDLK_8);
 	map(0x09, SDLK_9);
 	map(0x0A, SDLK_0);
-	map(0x0B, SDLK_MINUS);
-	map(0x0C, SDLK_EQUALS);
-	map(0x0D, SDLK_BACKSLASH);
 	map(0x41, SDLK_BACKSPACE);
 	map(0x46, SDLK_DELETE);
 	map(0x5F, SDLK_HELP);
@@ -123,8 +123,6 @@ os4video_InitOSKeymap(_THIS)
 	map(0x17, SDLK_i);
 	map(0x18, SDLK_o);
 	map(0x19, SDLK_p);
-	map(0x1A, SDLK_LEFTBRACKET);
-	map(0x1B, SDLK_RIGHTBRACKET);
 	map(0x44, SDLK_RETURN);
 	map(0x3D, SDLK_KP7);
 	map(0x3E, SDLK_KP8);
@@ -141,16 +139,12 @@ os4video_InitOSKeymap(_THIS)
 	map(0x26, SDLK_j);
 	map(0x27, SDLK_k);
 	map(0x28, SDLK_l);
-	map(0x29, SDLK_SEMICOLON);
-	map(0x2A, SDLK_QUOTE);
-	map(0x2B, SDLK_HASH); // German keyboard
 	map(0x4C, SDLK_UP);
 	map(0x2D, SDLK_KP4);
 	map(0x2E, SDLK_KP5);
 	map(0x2F, SDLK_KP6);
 	map(0x5E, SDLK_KP_PLUS);
 	map(0x60, SDLK_LSHIFT);
-	map(0x30, SDLK_LESS); // German keyboard
 	map(0x31, SDLK_z);
 	map(0x32, SDLK_x);
 	map(0x33, SDLK_c);
@@ -158,9 +152,6 @@ os4video_InitOSKeymap(_THIS)
 	map(0x35, SDLK_b);
 	map(0x36, SDLK_n);
 	map(0x37, SDLK_m);
-	map(0x38, SDLK_COMMA);
-	map(0x39, SDLK_PERIOD);
-	map(0x3A, SDLK_SLASH);
 	map(0x61, SDLK_RSHIFT);
 	map(0x4F, SDLK_LEFT);
 	map(0x4D, SDLK_DOWN);
@@ -234,6 +225,9 @@ os4video_HandleKeyboard(struct MyIntuiMessage *imsg)
 
 		s.scancode = (uint8)imsg->Code;
 		s.sym      = rawkey_table[imsg->Code & 0x7F];
+		if (s.sym == SDLK_UNKNOWN)
+			s.sym = os4video_TranslateUnicode(imsg->Code, imsg->Qualifier);
+
 		s.unicode  = SDL_TranslateUNICODE ? os4video_TranslateUnicode(imsg->Code, imsg->Qualifier)
 										  : 0;
 
