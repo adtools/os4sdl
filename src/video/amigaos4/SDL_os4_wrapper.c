@@ -39,6 +39,8 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+#define NOT_IMPLEMENTED_FUNCS
+
 #include <string.h>
 
 /* The GL API */
@@ -1468,6 +1470,10 @@ static void AmigluNurbsCallbackDataEXT(GLUnurbs* nurb, GLvoid* userData) {
 	return gluNurbsCallbackDataEXT(nurb, userData);
 }
 
+#ifdef NOT_IMPLEMENTED_FUNCS
+	#include "SDL_os4_notimplemented_funcs.c"
+#endif
+
 struct MyGLFunc
 {
    CONST_STRPTR name;
@@ -1830,6 +1836,9 @@ void *AmiGetGLProc(const char *proc)
 		{"glPixelZoom", AmiglPixelZoom},
 		{"glLogicOp", AmiglLogicOp},
 		{"glCopyPixels", AmiglCopyPixels},
+#ifdef NOT_IMPLEMENTED_FUNCS
+		#include "SDL_os4_notimplemented_table.c"
+#endif
 		{ NULL, NULL }
    };
 
