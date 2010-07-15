@@ -49,11 +49,11 @@ extern void SDL_TimerQuit(void);
 #endif
 
 /* The current SDL version */
-static SDL_version version = 
+static SDL_version version =
 	{ SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL };
 
 #ifdef __amigaos4__
-static const char __attribute((used)) amiga_ver[] = "$VER: SDL1_2_13 1.2 (11.05.2010)\0";
+static const char __attribute((used)) amiga_ver[] = "$VER: SDL1_2_13 1.3 (15.07.2010)\0";
 #endif
 
 /* The initialized subsystems */
@@ -232,7 +232,7 @@ void SDL_Quit(void)
 
 	/* Print the number of surfaces not freed */
 	if ( surfaces_allocated != 0 ) {
-		fprintf(stderr, "SDL Warning: %d SDL surfaces extant\n", 
+		fprintf(stderr, "SDL Warning: %d SDL surfaces extant\n",
 							surfaces_allocated);
 	}
 #endif
@@ -336,8 +336,8 @@ unsigned _System LibMain(unsigned hmod, unsigned termination)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-BOOL APIENTRY _DllMainCRTStartup( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
+BOOL APIENTRY _DllMainCRTStartup( HANDLE hModule,
+                       DWORD  ul_reason_for_call,
                        LPVOID lpReserved )
 {
 	switch (ul_reason_for_call) {
