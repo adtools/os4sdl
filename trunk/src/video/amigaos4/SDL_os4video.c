@@ -1563,12 +1563,17 @@ int os4video_ToggleFullScreen(_THIS, int on)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
 	SDL_Surface *current = SDL_VideoSurface;
+	Uint32 event_thread;
 	uint32 oldFlags = current->flags,
 		   newFlags = oldFlags,
  		   w = current->w,
 		   h = current->h,
 		   bpp = current->format->BitsPerPixel;
 	SDL_Rect screenRect;
+
+    // Don't switch if we don't own the window
+    if (!hidden->windowActive)
+    	return 0;
 
 	dprintf("Trying to toggle fullscreen\n");
 	dprintf("Current flags:%s\n", get_flags_str(current->flags));
@@ -1589,7 +1594,13 @@ int os4video_ToggleFullScreen(_THIS, int on)
 
 	/* FIXME: Save and transfer palette */
 	/* Make sure we're the only one */
-	SDL_Lock_EventThread();
+	event_thread = SDL_EventThreadID();
+	if ( event_thread && (SDL_ThreadID() == event_thread) ) {
+		event_thread = 0;
+	}
+	if ( event_thread ) {
+		SDL_Lock_EventThread();
+	}
 
   	hidden->dontdeletecontext = TRUE;
 
@@ -1640,14 +1651,17 @@ int os4video_ToggleFullScreen(_THIS, int on)
 		}
 #endif
 
-		SDL_Unlock_EventThread();
-		ResetMouseState(_this);
+		if ( event_thread ) {
+			SDL_Unlock_EventThread();
+		}
 
 		_this->UpdateRects(_this, 1, &screenRect);
 
 		if (on && bpp == 8)
 			_this->SetColors(_this, 0, 256, hidden->currentPalette);
 
+		SDL_ResetKeyboard();
+		ResetMouseState(_this);
 
 		dprintf("Success\n");
 	        dprintf("Obtained flags:%s\n", get_flags_str(current->flags));
