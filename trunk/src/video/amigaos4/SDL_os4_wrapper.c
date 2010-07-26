@@ -1471,7 +1471,7 @@ static void AmigluNurbsCallbackDataEXT(GLUnurbs* nurb, GLvoid* userData) {
 }
 
 #ifdef NOT_IMPLEMENTED_FUNCS
-	#include "SDL_os4_notimplemented_funcs.c"
+	#include "SDL_os4_notimplemented_funcs.t"
 #endif
 
 struct MyGLFunc
@@ -1837,7 +1837,7 @@ void *AmiGetGLProc(const char *proc)
 		{"glLogicOp", AmiglLogicOp},
 		{"glCopyPixels", AmiglCopyPixels},
 #ifdef NOT_IMPLEMENTED_FUNCS
-		#include "SDL_os4_notimplemented_table.c"
+		#include "SDL_os4_notimplemented_table.t"
 #endif
 		{ NULL, NULL }
    };
