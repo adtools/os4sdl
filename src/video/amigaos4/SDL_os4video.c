@@ -398,7 +398,7 @@ int
 os4video_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	struct SDL_PrivateVideoData *hidden = _this->hidden;
-	uint32 displayID;
+	uint32 displayID, freeMem;
 
 	hidden->dontdeletecontext = FALSE;
 
@@ -424,6 +424,10 @@ os4video_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	_this->info.wm_available = 1;
 	_this->info.blit_hw      = 1;
 	_this->info.blit_fill    = 1;
+
+	/* Get Video Mem */
+	SDL_IP96->p96GetBoardDataTags(0, P96BD_FreeMemory, &freeMem);
+	_this->info.video_mem = freeMem;
 
 	if (FALSE == os4video_PixelFormatFromModeID(vformat, displayID))
 	{
