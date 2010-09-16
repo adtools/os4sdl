@@ -39,6 +39,8 @@
 #include <libraries/Picasso96.h>
 
 //#define DEBUG
+#define USE_GFX_FUNCTIONS 1
+
 #include "../../main/amigaos4/SDL_os4debug.h"
 
 extern struct GraphicsIFace  *SDL_IGraphics;
@@ -266,6 +268,7 @@ static int os4video_HWAccelBlit(SDL_Surface *src, SDL_Rect *srcrect,
 	dprintf("called\n");
 
 	struct BitMap   *src_bm = src->hwdata->bm;
+	struct RenderInfo dst_ri;
 
 	static struct RastPort dst_rp;
 	static int dst_rp_initialized = 0;
@@ -277,15 +280,22 @@ static int os4video_HWAccelBlit(SDL_Surface *src, SDL_Rect *srcrect,
 
 	dst_rp.BitMap = dst->hwdata->bm;
 
-	SDL_IGraphics->BltBitMapRastPort (src_bm,
-								  srcrect->x,
-								  srcrect->y,
-								 &dst_rp,
-								  dstrect->x,
-								  dstrect->y,
-								  srcrect->w,
-								  srcrect->h,
-								  0xC0);
+	LONG dst_lock = SDL_IP96->p96LockBitMap(dst_rp.BitMap, (uint8 *)&dst_ri, sizeof(dst_ri));
+	if (dst_lock)
+	{
+		SDL_IP96->p96WritePixelArray(&dst_ri,
+									 srcrect->x,
+									 srcrect->y,
+									 &dst_rp,
+									 dstrect->x,
+									 dstrect->y,
+									 srcrect->w,
+									 srcrect->h);
+
+		SDL_IP96->p96UnlockBitMap(dst_rp.BitMap, dst_lock);
+	}
+	else
+		dprintf("Bitmap lock failed\n");
 
 	return 0;
 }
@@ -545,26 +555,46 @@ void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 	SDL_ILayers->LockLayer(0, w->WLayer);
 
 	{
+		struct RenderInfo dst_ri;
+		const SDL_Rect *r = &rects[0];
+
 		/* Current dimensions of inner window */
 		const struct IBox windowBox = {
 			w->BorderLeft, w->BorderTop, w->Width, w->Height
 		};
 
-		const SDL_Rect *r = &rects[0];
-
-		for ( ; numrects > 0; r++, numrects--)
+#ifndef USE_GFX_FUNCTIONS
+		LONG dst_lock = SDL_IP96->p96LockBitMap(hidden->offScreenBuffer.bitmap, (uint8 *)&dst_ri, sizeof(dst_ri));
+		if (dst_lock)
 		{
-			/* Blit rect to screen, constraing rect to bounds of inner window */
-			SDL_IGraphics->BltBitMapRastPort(hidden->offScreenBuffer.bitmap,
-										 r->x,
-										 r->y,
-										 w->RPort,
-										 r->x + windowBox.Left,
-										 r->y + windowBox.Top,
-										 MIN(r->w, windowBox.Width),
-										 MIN(r->h, windowBox.Height),
-										 0xC0);
+			for ( ; numrects > 0; r++, numrects--)
+			{
+				/* Blit rect to screen, constraing rect to bounds of inner window */
+				SDL_IP96->p96WritePixelArray(&dst_ri,
+											 r->x,
+											 r->y,
+											 w->RPort,
+											 r->x + windowBox.Left,
+											 r->y + windowBox.Top,
+											 MIN(r->w, windowBox.Width),
+											 MIN(r->h, windowBox.Height));
+			}
+			SDL_IP96->p96UnlockBitMap(hidden->offScreenBuffer.bitmap, dst_lock);
 		}
+		else
+			dprintf("Bitmap lock failed\n");
+#else
+		SDL_IGraphics->BltBitMapRastPort(hidden->offScreenBuffer.bitmap,
+									 r->x,
+									 r->y,
+									 w->RPort,
+									 r->x + windowBox.Left,
+									 r->y + windowBox.Top,
+									 MIN(r->w, windowBox.Width),
+									 MIN(r->h, windowBox.Height),
+									 0xC0);
+#endif
+
 	}
 
 	SDL_ILayers->UnlockLayer(w->WLayer);
