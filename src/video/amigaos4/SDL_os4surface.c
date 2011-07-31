@@ -39,6 +39,7 @@
 #include <libraries/Picasso96.h>
 
 //#define DEBUG
+
 #include "../../main/amigaos4/SDL_os4debug.h"
 
 extern struct GraphicsIFace  *SDL_IGraphics;
@@ -266,7 +267,7 @@ static int os4video_HWAccelBlit(SDL_Surface *src, SDL_Rect *srcrect,
 	dprintf("called\n");
 
 	struct BitMap   *src_bm = src->hwdata->bm;
-    struct RenderInfo src_ri = { 0 };
+	struct RenderInfo src_ri={ 0 };
 
 	static struct RastPort dst_rp;
 	static int dst_rp_initialized = 0;
@@ -277,37 +278,27 @@ static int os4video_HWAccelBlit(SDL_Surface *src, SDL_Rect *srcrect,
 	}
 
 	dst_rp.BitMap = dst->hwdata->bm;
+	
+	if (src_bm)
+	{
+		LONG src_lock = SDL_IP96->p96LockBitMap(src_bm, (uint8 *)&src_ri, sizeof(src_ri));
 
-    if (src_bm)
-    {
-        LONG src_lock = SDL_IP96->p96LockBitMap(src_bm, (uint8 *)&src_ri, sizeof(src_ri));
-
-        if (src_lock)
-        {
-/*
-	SDL_IGraphics->BltBitMapRastPort (src_bm,
-								  srcrect->x,
-								  srcrect->y,
-								 &dst_rp,
-								  dstrect->x,
-								  dstrect->y,
-								  srcrect->w,
-								  srcrect->h,
-								  0xC0);
-*/
-            SDL_IP96->p96WritePixelArray(&src_ri,
-                                         srcrect->x,
-                                         srcrect->y,
-                                        &dst_rp,
-                                         dstrect->x,
-								         dstrect->y,
-								         srcrect->w,
-								         srcrect->h);
-
-            SDL_IP96->p96UnlockBitMap(src_bm, src_lock);
-        }
-    }
-
+		if (src_lock)
+		{
+			SDL_IP96->p96WritePixelArray(&src_ri,
+										 srcrect->x,
+										 srcrect->y,
+										 &dst_rp,
+										 dstrect->x,
+										 dstrect->y,
+										 srcrect->w,
+										 srcrect->h);
+	
+			SDL_IP96->p96UnlockBitMap(src_bm, src_lock);
+		}
+		else
+			dprintf("Bitmap lock failed\n");
+	}
 	return 0;
 }
 
@@ -559,56 +550,33 @@ void os4video_UpdateRectsOffscreen_8bit(_THIS, int numrects, SDL_Rect *rects)
  */
 void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 {
-	struct SDL_PrivateVideoData *hidden   = _this->hidden;
-	struct Window               *w        = hidden->win;
-    struct RenderInfo           hidden_ri = { 0 };
-
+	struct SDL_PrivateVideoData *hidden = _this->hidden;
+	struct Window               *w      = hidden->win;
+	
 	/* We don't want our window changing size while we're doing this */
 	SDL_ILayers->LockLayer(0, w->WLayer);
 
 	{
+		struct RenderInfo dst_ri;
 		/* Current dimensions of inner window */
 		const struct IBox windowBox = {
 			w->BorderLeft, w->BorderTop, w->Width, w->Height
 		};
-
+		
 		const SDL_Rect *r = &rects[0];
 
 		for ( ; numrects > 0; r++, numrects--)
 		{
-            if (hidden->offScreenBuffer.bitmap)
-            {
-                LONG hidden_lock = SDL_IP96->p96LockBitMap(hidden->offScreenBuffer.bitmap,
-                                                           (uint8 *)&hidden_ri,
-                                                           sizeof(hidden_ri));
-
-                if (hidden_lock)
-                {
-                    SDL_IP96->p96WritePixelArray(&hidden_ri,
-										 r->x,
-										 r->y,
-										 w->RPort,
-										 r->x + windowBox.Left,
-										 r->y + windowBox.Top,
-										 MIN(r->w, windowBox.Width),
-										 min(r->h, windowBox.Height));
-
-                    SDL_IP96->p96UnlockBitMap(hidden->offScreenBuffer.bitmap, hidden_lock);
-                }
-            }
-
 			/* Blit rect to screen, constraing rect to bounds of inner window */
-            /*
 			SDL_IGraphics->BltBitMapRastPort(hidden->offScreenBuffer.bitmap,
-										 r->x,
-										 r->y,
-										 w->RPort,
-										 r->x + windowBox.Left,
-										 r->y + windowBox.Top,
-										 MIN(r->w, windowBox.Width),
-										 MIN(r->h, windowBox.Height),
-										 0xC0);
-            */
+								 r->x,
+								 r->y,
+								 w->RPort,
+								 r->x + windowBox.Left,
+								 r->y + windowBox.Top,
+								 MIN(r->w, windowBox.Width),
+								 MIN(r->h, windowBox.Height),
+								 0xC0);
 		}
 	}
 
