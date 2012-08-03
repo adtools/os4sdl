@@ -231,27 +231,7 @@ os4video_HandleKeyboard(struct MyIntuiMessage *imsg)
 		s.unicode  = SDL_TranslateUNICODE ? os4video_TranslateUnicode(imsg->Code, imsg->Qualifier)
 										  : 0;
 
-		if (s.sym == SDLK_CAPSLOCK)
-		{
-			/* Special handling for CAPSLOCK key. SDL toggles its KMOD_CAPS
-			 * state on SDLK_CAPSLOCK key down events. It ignores any
-			 * SDLK_CAPSLOCK key up events.
-			 */
-
-			/* Force SDL_Modstate so that the KMOD_CAPS bit is set according to the
-			 * previous real CapsLock key state (i.e., the state of before this event)
-			 * before passing on the event. This ensures that when SDL toggles the
-			 * KMOD_CAPS bit, the result is always the real CapsLock state.
-			 */
-			Uint16 modstate = SDL_GetModState() & ~KMOD_CAPS;
-			if (imsg->Code >= 128)
-				modstate |= KMOD_CAPS;
-			SDL_SetModState(modstate);
-
-			/* Always report a key-down event for CapsLock events */
-			SDL_PrivateKeyboard(SDL_PRESSED, &s);
-		}
-		else if (imsg->Code <= 127)
+		if (imsg->Code <= 127)
 			SDL_PrivateKeyboard(SDL_PRESSED, &s);
 		else
 			SDL_PrivateKeyboard(SDL_RELEASED, &s);

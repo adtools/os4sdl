@@ -27,8 +27,6 @@
 #include <exec/ports.h>
 #include <devices/ahi.h>
 
-#include <interfaces/ahi.h>
-
 #include "SDL_types.h"
 
 /* Hidden "this" pointer for the video functions */

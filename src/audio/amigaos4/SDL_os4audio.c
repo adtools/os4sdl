@@ -35,7 +35,6 @@
 
 #include <dos/dos.h>
 #include <proto/exec.h>
-#include <proto/ahi.h>
 
 #undef DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
@@ -124,11 +123,11 @@ static void OS4_CloseAhiDevice(OS4AudioData *os4data)
     if (os4data->ahi_IORequest[0])
     {
         dprintf("Aborting I/O...\n");
-        if (!IExec->CheckIO((struct IORequest *)os4data->ahi_IORequest[0]))
-            IExec->WaitIO((struct IORequest *)os4data->ahi_IORequest[0]);
-
-        if (os4data->link && !IExec->CheckIO((struct IORequest *)os4data->ahi_IORequest[1]))
-            IExec->WaitIO((struct IORequest *)os4data->ahi_IORequest[1]);
+        if (os4data->link)
+        {
+            IExec->AbortIO((struct IORequest *)os4data->link);
+            IExec->WaitIO((struct IORequest *)os4data->link);
+        }
 
         dprintf("Closing device\n");
         IExec->CloseDevice((struct IORequest *)os4data->ahi_IORequest[0]);
@@ -342,12 +341,17 @@ static void OS4_PlayAudio(SDL_AudioDevice *self)
 	if( spec->format == AUDIO_U8 )
 	{
 #if POSSIBLY_DANGEROUS_OPTIMISATION
-		int i;
-		for( i=0; i<os4data->audio_MixBufferSize/4; i++ )
-			((uint32 *)os4data->audio_MixBuffer[os4data->currentBuffer])[i] ^= 0x80808080;
-		i*=4;
-		for( ; i<os4data->audio_MixBufferSize; i++ )
-			os4data->audio_MixBuffer[os4data->currentBuffer][i] -= 128;
+		int i, n;
+		uint8 *mixbuf = os4data->audio_MixBuffer[os4data->currentBuffer];
+		n = os4data->audio_MixBufferSize >> 2;
+		for( i=0; i<n; i++ )
+		{
+			*(uint32 *)mixbuf ^= 0x80808080;
+			mixbuf += 4;
+		}
+		n = os4data->audio_MixBufferSize & 3;
+		for( i=0; i<n; i++ )
+			*mixbuf++ -= 128;
 #else
 		int i;
 		for( i=0; i<os4data->audio_MixBufferSize; i++ )
