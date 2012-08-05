@@ -342,16 +342,16 @@ static void OS4_PlayAudio(SDL_AudioDevice *self)
 	{
 #if POSSIBLY_DANGEROUS_OPTIMISATION
 		int i, n;
-		uint8 *mixbuf = os4data->audio_MixBuffer[os4data->currentBuffer];
-		n = os4data->audio_MixBufferSize >> 2;
+		uint32 *mixbuf = (uint32 *)os4data->audio_MixBuffer[os4data->currentBuffer];
+		n = os4data->audio_MixBufferSize/4; // let the gcc optimiser decide the best way to divide by 4
 		for( i=0; i<n; i++ )
+			*(mixbuf++) ^= 0x80808080;
+		if (0 != (n = os4data->audio_MixBufferSize & 3))
 		{
-			*(uint32 *)mixbuf ^= 0x80808080;
-			mixbuf += 4;
+			uint8  *mixbuf8 = (uint8*)mixbuf;
+			for( i=0; i<n; i++ )
+				*(mixbuf8++) -= 128;
 		}
-		n = os4data->audio_MixBufferSize & 3;
-		for( i=0; i<n; i++ )
-			*mixbuf++ -= 128;
 #else
 		int i;
 		for( i=0; i<os4data->audio_MixBufferSize; i++ )
