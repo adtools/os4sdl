@@ -53,7 +53,7 @@ static SDL_version version =
 	{ SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL };
 
 #ifdef __amigaos4__
-static const char __attribute((used)) amiga_ver[] = "$VER: SDL1_2_13 1.3 (15.07.2010)\0";
+static const char __attribute((used)) amiga_ver[] = "$VER: SDL1_2_13 1.4 (19.08.2012)\0";
 #endif
 
 /* The initialized subsystems */
