@@ -1,11 +1,6 @@
 #!/bin/sh
-host_os=`uname`
-if test "${host_os}" = AmigaOS; then
-  prefix=/SDK/local/newlib
-else
-  prefix=/usr/local/amiga/ppc-amigaos/SDK/local/newlib
-fi
 
+prefix=/usr/local/amiga
 exec_prefix=${prefix}
 exec_prefix_set=no
 libdir=${exec_prefix}/lib

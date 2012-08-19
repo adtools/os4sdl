@@ -21,7 +21,7 @@ distfile = $(distdir).tar.gz
 SHELL	= /bin/sh
 CC      = gcc
 INCLUDE = -I./include
-CFLAGS  = -O2 
+CFLAGS  = -g -O2 
 EXTRA_CFLAGS = -I./include -D_GNU_SOURCE=1 -DMINIGL
 LDFLAGS = 
 EXTRA_LDFLAGS =  -lm -lGL -lGLU
