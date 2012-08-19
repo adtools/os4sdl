@@ -10,10 +10,8 @@ code with the existing 68k AmigaOS or MorphOS versions of SDL (although the
 CD-ROM support used the MorphOS SDL as a reference).
 
 SDL for AmigaOS 4.x is still a work in progress. What functionality exists
-has proven to be stable, but some features of SDL are not yet supported. Note
-also that it is currently only provided as a static linker library (albeit in
-two flavours, depending on which C library you choose to employ: clib2 or
-newlib). Eventually, a shared library build will be provided.
+has proven to be stable, but some features of SDL are not yet supported.
+
 
 Supported features
 ==================
@@ -66,7 +64,7 @@ Contributors
 ============
 
 SDL itself is the work of Sam Lantinga and many others. See the main SDL
-documentation for a full list. This AmigaOS 4.0 port has been created by
+documentation for a full list. This AmigaOS 4.x port has been created by
 (in alphabetical order):
 
 Richard Drummond <evilrich@rcrummond.net>
@@ -75,6 +73,8 @@ Thomas Frieden <ThomasF@hyperion-entertainment.biz>
 Peter Gordon <pete@petergordon.org.uk>
 Andrea Palmate
 Juergen Schober
+Fredrik Wikstrom
+
 
 
 Contacts
