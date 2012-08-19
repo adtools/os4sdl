@@ -1015,6 +1015,8 @@ $(objects)/SDL_dummyaudio.lo: ./src/audio/dummy/SDL_dummyaudio.c \
 $(objects)/SDL_os4_wrapper.lo: ./src/video/amigaos4/SDL_os4_wrapper.c \
 	./include/SDL_config.h \
 	./include/SDL_platform.h \
+	./src/video/amigaos4/SDL_os4_notimplemented_funcs.t \
+	./src/video/amigaos4/SDL_os4_notimplemented_table.t \
 
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c ./src/video/amigaos4/SDL_os4_wrapper.c  -o $@
 
