@@ -1,0 +1,86 @@
+
+# This makefile is created to avoid using configure and libtool.
+# It is specific to AmigaOS 4.x.
+# It compiles libraries and tests as well, using a build directory that mimics the hierarchy
+# of src and test directories:
+# build/
+#   static/
+#     src/
+#     test/
+#   shared/
+#     src/
+#     test/
+#
+# It is at the moment in-progress work. To do:
+# - Check in various contexts
+# - Implement the shared library part
+
+SHELL	= /bin/sh
+CC      = ppc-amigaos-gcc
+INCLUDE = -I./include
+CFLAGS  = -g -O2 
+#EXTRA_CFLAGS = -D_GNU_SOURCE=1 -DMINIGL -DPTHREAD_CANCEL_ASYNCHRONOUS=PTHREAD_CANCEL_ASYNCHRONOUS
+LDFLAGS = 
+EXTRA_LDFLAGS =  -lm -lGL -lGLU -lpthread
+AR	= ppc-amigaos-ar
+RANLIB	= ppc-amigaos-ranlib
+#-fPIC -DPIC
+
+
+### Sources and objects files, build directories ###
+
+SOURCES = $(wildcard src/*.c src/audio/*.c src/cdrom/*.c src/cpuinfo/*.c src/events/*.c src/file/*.c src/stdlib/*.c src/thread/*.c src/timer/*.c src/video/*.c src/joystick/*.c src/video/dummy/*.c src/audio/disk/*.c src/audio/dummy/*.c src/video/amigaos4/*.c src/audio/amigaos4/*.c src/thread/generic/SDL_syssem.c src/thread/amigaos4/SDL_sysmutex.c src/thread/amigaos4/SDL_systhread.c src/thread/pthread/SDL_syscond.c src/timer/amigaos4/*.c src/main/amigaos4/SDL_os4timer.c src/joystick/amigaos4/*.c src/cdrom/amigaos4/*.c src/loadso/dummy/*.c)
+
+# Removed from the original list of sources : they don't compile
+#./src/thread/pthread/SDL_sysmutex.c ./src/thread/pthread/SDL_systhread.c 
+
+TESTS_SOURCES = $(wildcard test/*.c)
+
+STATIC_OBJDIR := build/static
+STATIC_OBJS := $(patsubst %.c,%.o, $(addprefix $(STATIC_OBJDIR)/,$(SOURCES)))
+
+STATIC_TESTS_OBJDIR := $(STATIC_OBJDIR)/test
+STATIC_TESTS_OBJS := $(patsubst %.c,%.o, $(addprefix $(STATIC_OBJDIR)/,$(TESTS_SOURCES)))
+STATIC_TESTS := $(patsubst %.c,%, $(addprefix $(STATIC_OBJDIR)/,$(TESTS_SOURCES)))
+
+SHARED_OBJDIR := build/shared
+SHARED_OBJS := $(patsubst %.c,%.o, $(addprefix $(SHARED_OBJDIR)/,$(SOURCES)))
+
+
+### Implicit compilation rules ###
+
+$(STATIC_OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(INCLUDE) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<
+
+$(STATIC_OBJDIR)/test/%: $(STATIC_OBJDIR)/test/%.o
+	@echo Link test $@
+	@mkdir -p $(dir $@)
+	$(CC) -L./$(STATIC_OBJDIR) -o $@ $< -lSDL
+
+$(SHARED_OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(INCLUDE) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<
+
+
+### Targets ###
+
+all: $(STATIC_OBJDIR)/libSDL.a $(STATIC_TESTS_OBJDIR)
+	@echo "Build complete"
+
+$(STATIC_OBJDIR)/libSDL.a: $(STATIC_OBJS)
+	$(AR) rcu $@ $^
+	$(RANLIB) $@
+	ls -l $@
+
+$(STATIC_TESTS_OBJDIR): $(STATIC_TESTS)
+	cp test/icon.bmp $(STATIC_OBJDIR)/test/
+	cp test/picture.xbm $(STATIC_OBJDIR)/test/
+	cp test/sail.bmp $(STATIC_OBJDIR)/test/
+	cp test/sample.bmp $(STATIC_OBJDIR)/test/
+	cp test/sample.wav $(STATIC_OBJDIR)/test/
+	cp test/utf8.txt $(STATIC_OBJDIR)/test/
+
+clean:
+	rm -rf $(STATIC_OBJDIR) $(SHARED_OBJDIR)
+
