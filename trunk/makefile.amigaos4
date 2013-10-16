@@ -24,7 +24,7 @@ LDFLAGS =
 EXTRA_LDFLAGS =  -lm -lGL -lGLU -lpthread
 AR	= ppc-amigaos-ar
 RANLIB	= ppc-amigaos-ranlib
-#-fPIC -DPIC
+PIC_CFLAGS = -fPIC -DPIC
 
 
 ### Sources and objects files, build directories ###
@@ -60,18 +60,21 @@ $(STATIC_OBJDIR)/test/%: $(STATIC_OBJDIR)/test/%.o
 
 $(SHARED_OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(INCLUDE) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<
+	$(CC) $(PIC_CFLAGS) $(INCLUDE) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<
 
 
 ### Targets ###
 
-all: $(STATIC_OBJDIR)/libSDL.a $(STATIC_TESTS_OBJDIR)
+all: $(STATIC_OBJDIR)/libSDL.a $(SHARED_OBJDIR)/libSDL-1.2.so $(STATIC_TESTS_OBJDIR)
 	@echo "Build complete"
 
 $(STATIC_OBJDIR)/libSDL.a: $(STATIC_OBJS)
 	$(AR) rcu $@ $^
 	$(RANLIB) $@
 	ls -l $@
+
+$(SHARED_OBJDIR)/libSDL-1.2.so: $(SHARED_OBJS)
+	$(CC) $(LDFLAGS) -shared -o $@ $^ $(EXTRA_LDFLAGS)
 
 $(STATIC_TESTS_OBJDIR): $(STATIC_TESTS)
 	cp test/icon.bmp $(STATIC_OBJDIR)/test/
