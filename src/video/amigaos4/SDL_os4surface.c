@@ -557,7 +557,6 @@ void os4video_UpdateRectsOffscreen(_THIS, int numrects, SDL_Rect *rects)
 	SDL_ILayers->LockLayer(0, w->WLayer);
 
 	{
-		struct RenderInfo dst_ri;
 		/* Current dimensions of inner window */
 		const struct IBox windowBox = {
 			w->BorderLeft, w->BorderTop, w->Width, w->Height

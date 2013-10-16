@@ -24,11 +24,11 @@
 //#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
 
-
 /* Thread management routines for SDL */
 
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
+#include "SDL_stdinc.h"
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
 #include "../../main/amigaos4/SDL_os4timer_c.h"

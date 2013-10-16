@@ -232,13 +232,11 @@ static SDL_AudioDevice *OS4_CreateDevice(int devindex)
 
 static int OS4_OpenAudio(SDL_AudioDevice *self, SDL_AudioSpec *spec)
 {
-    Uint16 audio_format;
     int result = 0;
-    int audio_format_ok = 0;
     OS4AudioData * os4data = self->hidden;
 
 
-	if (spec->format & 0xff != 8)
+	if ((spec->format & 0xff) != 8)
 		spec->format = AUDIO_S16MSB;
 
     dprintf("New format = 0x%x\n", spec->format);

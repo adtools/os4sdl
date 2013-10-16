@@ -21,11 +21,13 @@
 */
 #include "SDL_config.h"
 
+#include "SDL_thread.h"
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
 #include "SDL_os4video.h"
 #include "SDL_os4utils.h"
 #include "SDL_os4blit.h"
+#include "../SDL_pixels_c.h"
 
 #include <proto/exec.h>
 #include <proto/intuition.h>
@@ -37,6 +39,8 @@
 
 //#define DEBUG
 #include "../../main/amigaos4/SDL_os4debug.h"
+
+extern void SDL_Quit(void);
 
 /*
  * Libraries required by OS4 video driver
@@ -87,7 +91,7 @@ static BOOL open_libraries(void)
 	return TRUE;
 }
 
-static BOOL close_libraries(void)
+static void close_libraries(void)
 {
 	if (SDL_IKeymap) {
 		IExec->DropInterface((struct Interface *) SDL_IKeymap);
