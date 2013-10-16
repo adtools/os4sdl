@@ -74,7 +74,7 @@ $(STATIC_OBJDIR)/libSDL.a: $(STATIC_OBJS)
 	ls -l $@
 
 $(SHARED_OBJDIR)/libSDL-1.2.so: $(SHARED_OBJS)
-	$(CC) $(LDFLAGS) -shared -Wl,-soname,libSDL-1.2.so -o $@ $^ $(EXTRA_LDFLAGS)
+	$(CC) -shared -Wl,-soname,libSDL-1.2.so -o $@ $^ -lpthread
 
 $(STATIC_TESTS_OBJDIR): $(STATIC_TESTS)
 	cp test/icon.bmp $(STATIC_OBJDIR)/test/
