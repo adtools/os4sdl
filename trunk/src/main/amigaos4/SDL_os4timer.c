@@ -90,6 +90,7 @@ void _EXIT_os4timer_shutdown(void)
 #ifndef DISABLE_THREADS
 
 # include "../../thread/amigaos4/SDL_systhread_c.h"
+extern os4timer_Instance *os4thread_GetTimer(void);
 # define GetTimerInstance(x) os4thread_GetTimer(x)
 
 #else

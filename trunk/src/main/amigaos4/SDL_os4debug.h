@@ -29,6 +29,8 @@
 
 #include <proto/exec.h>
 
+#include <stdio.h>
+
 #ifndef DEBUG
 # define dprintf(format, args...)
 # define kprintf(format, args...)

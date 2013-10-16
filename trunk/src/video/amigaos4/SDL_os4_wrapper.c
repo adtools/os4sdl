@@ -1274,6 +1274,7 @@ static GLint AmigluScaleImage( GLenum format, GLint widthin, GLint heightin, GLe
 	return gluScaleImage(format, widthin, heightin, typein, datain, widthout, heightout, typeout, dataout);
 }
 
+#if 0
 static GLint AmigluBuild1DMipmaps( GLenum target, GLint components, GLint width, GLenum format, GLenum type, const void *data ) {
 #ifndef __amigaos4__
 	return gluBuild1DMipmaps(target, components, width, format, type, data);
@@ -1281,6 +1282,7 @@ static GLint AmigluBuild1DMipmaps( GLenum target, GLint components, GLint width,
     return 0;
 #endif
 }
+#endif
 
 static GLint AmigluBuild2DMipmaps( GLenum target, GLint components, GLint width, GLint height, GLenum format, GLenum type, void *data ) {
 	return gluBuild2DMipmaps(target, components, width, height, format, type, data);

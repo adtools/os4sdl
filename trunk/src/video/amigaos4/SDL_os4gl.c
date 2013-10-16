@@ -122,8 +122,6 @@ int os4video_GL_Init(_THIS)
 
 	if (hidden->IGL)
 	{
-		struct GLContextIFace **target;
-
 		_this->gl_config.driver_loaded = 1;
 
         hidden->IGL->GLViewport(0,0,w,h);
@@ -234,6 +232,9 @@ int	os4video_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value)
 		case SDL_GL_ACCUM_ALPHA_SIZE:
 			*value = 0;
 			return -1;
+
+		default:
+			break;
 	}
 
 	return -1;
@@ -300,6 +301,8 @@ void os4video_GL_SwapBuffers(_THIS)
 		//mglSetBitmap(hidden->screenHWData.bm);
 	}
 }
+
+extern void *AmiGetGLProc(const char *proc);
 
 void *os4video_GL_GetProcAddress(_THIS, const char *proc) {
 	void *func = NULL;
