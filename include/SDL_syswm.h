@@ -35,11 +35,14 @@
 extern "C" {
 #endif
 
+
 /* Your application has access to a special type of event 'SDL_SYSWMEVENT',
    which contains window-manager specific information and arrives whenever
    an unhandled window event occurs.  This event is ignored by default, but
    you can enable it with SDL_EventState()
 */
+
+
 #ifdef SDL_PROTOTYPES_ONLY
 struct SDL_SysWMinfo;
 typedef struct SDL_SysWMinfo SDL_SysWMinfo;
@@ -59,6 +62,7 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
 /* matches the re-define above */
 #undef Cursor
 #endif
+
 
 /* These are the various supported subsystems under UNIX */
 typedef enum {
@@ -170,6 +174,21 @@ struct SDL_SysWMmsg {
 typedef struct SDL_SysWMinfo {
 	SDL_version version;
 	int data;
+} SDL_SysWMinfo;
+
+#elif defined(SDL_VIDEO_DRIVER_AMIGAOS4)
+#include <proto/intuition.h>
+
+/* The AmigaOS4 custom event structure */
+struct SDL_SysWMmsg {
+	SDL_version version;
+	struct Window *window;	
+};
+
+/* The AmigaOS4 custom window manager information structure */
+typedef struct SDL_SysWMinfo {
+	SDL_version version;
+	struct Window *window;	
 } SDL_SysWMinfo;
 
 #else

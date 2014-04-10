@@ -29,6 +29,7 @@
 #include "SDL_thread.h"
 #include "SDL_sysmutex_c.h"
 
+
 struct SDL_cond
 {
 	pthread_cond_t cond;

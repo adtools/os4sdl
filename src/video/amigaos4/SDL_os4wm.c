@@ -532,3 +532,11 @@ void os4video_SetIcon(_THIS, SDL_Surface *icon, Uint8 *mask)
 	hidden->currentIcon->do_Type = 0;
 
 }
+
+
+int os4video_GetWMInfo(_THIS, SDL_SysWMinfo *info)
+{		
+	SDL_VERSION(&(info->version));
+	info->window = _this->hidden->win;
+	return 1;
+}

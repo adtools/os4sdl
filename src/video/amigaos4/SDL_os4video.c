@@ -276,8 +276,7 @@ os4video_DeleteDevice(_THIS)
 	}
 }
 
-SDL_VideoDevice *
-os4video_CreateDevice(int devnum)
+SDL_VideoDevice *os4video_CreateDevice(int devnum)
 {
 	SDL_VideoDevice *os4video_device;
 	dprintf("Creating OS4 video device\n");
@@ -355,6 +354,9 @@ os4video_CreateDevice(int devnum)
     os4video_device->PumpEvents = os4video_PumpEvents;
 	os4video_device->CreateWMCursor = os4video_CreateWMCursor;
 	os4video_device->ShowWMCursor = os4video_ShowWMCursor;
+	
+	os4video_device->GetWMInfo = os4video_GetWMInfo;
+	
 	os4video_device->FreeWMCursor = os4video_FreeWMCursor;
 	os4video_device->WarpWMCursor = os4video_WarpWMCursor;
 	os4video_device->UpdateMouse = os4video_UpdateMouse;
