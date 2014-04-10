@@ -25,9 +25,9 @@
 #define _SDL_sysvideo_h
 
 #include "SDL_mouse.h"
-#define SDL_PROTOTYPES_ONLY
+//#define SDL_PROTOTYPES_ONLY
 #include "SDL_syswm.h"
-#undef SDL_PROTOTYPES_ONLY
+//#undef SDL_PROTOTYPES_ONLY
 
 /* This file prototypes the video driver implementation.
    This is designed to be easily converted to C++ in the future.
