@@ -1,0 +1,1 @@
+This is the official port of the Simple DirectMedia Layer library to AmigaOS 4.x.
